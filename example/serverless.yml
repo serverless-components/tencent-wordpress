@@ -1,0 +1,14 @@
+org: orgDemo
+app: appDemo
+stage: dev
+component: wordpress@dev
+name: wordpressDemo
+
+inputs:
+  src:
+    src: ./wordpress
+    exclude:
+      - .env
+  vpc:
+    vpcId: vpc-qtysb91q
+    subnetId: subnet-lsnnu5rl

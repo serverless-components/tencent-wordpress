@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "adm-zip": "^0.5.1",
+    "download": "^8.0.0",
+    "tencent-component-toolkit": "^1.20.8"
+  }
+}

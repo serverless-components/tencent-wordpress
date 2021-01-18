@@ -1,0 +1,85 @@
+name: wordpress
+version: dev
+author: Tencent Cloud, Inc.
+org: Tencent Cloud, Inc.
+description: Deploy a serverless wordpress.js application on Tencent SCF and API Gateway.
+keywords: tencent, serverless, wordpress
+repo: https://github.com/serverless-components/tencent-wordpress
+readme: https://github.com/serverless-components/tencent-wordpress/tree/master/README.md
+license: MIT
+main: ./src
+webDeployable: true
+
+actions:
+  deploy:
+    definition: Deploy wordpress application
+    inputs:
+      src:
+        type: src
+        required: true
+        description: The folder containing the source code of your wordpress application.
+      faas:
+        type: object
+        keys:
+          memorySize:
+            type: number
+            description: SCF memory size
+            default: 128 # The default value
+            min: 64 # Minimum number allowed
+            max: 3072 # Maximum number allowed
+            allow: # The values that are allowed for this
+              - 64
+              - 128
+              - 256
+              - 384
+              - 512
+              - 640
+              - 768
+              - 896
+              - 1024
+              - 1152
+              - 1280
+              - 1408
+              - 1536
+              - 1664
+              - 1792
+              - 1920
+              - 2048
+              - 2176
+              - 2304
+              - 2432
+              - 2560
+              - 2688
+              - 2816
+              - 2944
+              - 3072
+      apigw:
+        type: object
+        keys:
+          id:
+            type: string
+            regex: '^service-(\w){8,}$'
+          name:
+            type: string
+            description: Name of API Gateway
+            default: serverless
+            regex: '^[a-zA-Z][a-zA-Z0-9(_)]{0,48}[a-zA-Z0-9]?$'
+      vpc:
+        type: object
+        keys:
+          vpcId:
+            type: string
+          subnetId:
+            type: string
+      cfs:
+        type: object
+        keys:
+          cfsId:
+            type: string
+      db:
+        type: object
+        keys:
+          clusterId:
+            type: string
+  remove:
+    definition: Remove wordpress application
