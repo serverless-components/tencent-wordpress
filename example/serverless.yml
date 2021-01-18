@@ -1,7 +1,7 @@
 org: orgDemo
 app: appDemo
 stage: dev
-component: wordpress@dev
+component: wordpress
 name: wordpressDemo
 
 inputs:
@@ -9,6 +9,3 @@ inputs:
     src: ./wordpress
     exclude:
       - .env
-  vpc:
-    vpcId: vpc-qtysb91q
-    subnetId: subnet-lsnnu5rl
