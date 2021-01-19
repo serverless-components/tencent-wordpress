@@ -26,11 +26,11 @@ it('Using template should deploy success', async () => {
 
   const { outputs } = instance
   expect(instance.instanceName).toEqual(instanceYaml.name)
-  // get src from template by default
-  expect(outputs.region).toEqual('ap-shanghai')
 
   // vpc
   expect(outputs.vpc).toBeDefined()
+  expect(outputs.vpc.region).toBe('ap-shanghai')
+  expect(outputs.vpc.zone).toBe('ap-shanghai-2')
   expect(outputs.vpc.vpcId).toContain('vpc-')
   expect(outputs.vpc.subnetId).toContain('subnet-')
 
@@ -40,7 +40,7 @@ it('Using template should deploy success', async () => {
 
   // db
   expect(outputs.db).toBeDefined()
-  expect(outputs.db.custerId).toContain('cynosdbmysql-')
+  expect(outputs.db.clusterId).toContain('cynosdbmysql-')
   expect(outputs.db.dbMode).toBe('SERVERLESS')
   expect(outputs.db.connection).toEqual({
     ip: expect.any(String),
@@ -68,7 +68,7 @@ it('Using template should deploy success', async () => {
 
   // wpServerFaas
   expect(outputs.wpServerFaas).toBeDefined()
-  expect(outputs.wpInitFaas.name).toEqual('wp-server')
+  expect(outputs.wpServerFaas.name).toEqual('wp-server')
   expect(outputs.wpServerFaas.runtime).toEqual('CustomRuntime')
   expect(outputs.wpServerFaas.layers).toEqual([
     {
