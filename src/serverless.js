@@ -1,7 +1,7 @@
 const { Component } = require('@serverless/core')
 const { TypeError, ApiError } = require('tencent-component-toolkit/src/utils/error')
 const { sleep } = require('@ygkit/request')
-const { getTimestamp, getCodeZipPath, uploadCodeToCos } = require('./utils')
+const { generateId, getTimestamp, getCodeZipPath, uploadCodeToCos } = require('./utils')
 const {
   invokeFaas,
   deployFaas,
@@ -52,13 +52,33 @@ class ServerlessComponent extends Component {
   async deploy(inputs) {
     this.initialize()
 
+    let uuid = null
+    if (!this.state.uuid) {
+      uuid = generateId()
+      this.state.uuid = generateId()
+    } else {
+      ;({ uuid } = this.state)
+    }
+
     const { framework, CONFIGS, __TmpCredentials } = this
     const region = inputs.region || CONFIGS.region
 
     console.log(`Deploying ${framework} Application`)
 
     // 1. 部署VPC
-    const vpcOutput = await deployVpc({ instance: this, inputs, state: this.state.vpc })
+    if (inputs.vpc) {
+      inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}-${uuid}`
+      inputs.vpc.subnetName = `${CONFIGS.vpc.subnetName}-${uuid}`
+    } else {
+      inputs.vpc = {}
+      inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}-${uuid}`
+      inputs.vpc.subnetName = `${CONFIGS.vpc.subnetName}-${uuid}`
+    }
+    const vpcOutput = await deployVpc({
+      instance: this,
+      inputs,
+      state: this.state.vpc
+    })
 
     inputs.vpc = {
       vpcId: vpcOutput.vpcId,
@@ -69,6 +89,12 @@ class ServerlessComponent extends Component {
 
     // 2. 部署 cfs 和 database
     // 此处并行部署为了优化部署时间
+    if (inputs.cfs) {
+      inputs.cfs.fsName = `${CONFIGS.cfs.name}-${uuid}`
+    } else {
+      inputs.cfs = {}
+      inputs.cfs.fsName = `${CONFIGS.cfs.name}-${uuid}`
+    }
     const [cfsOutput, dbOutput] = await Promise.all([
       deployCfs({
         instance: this,
@@ -97,32 +123,44 @@ class ServerlessComponent extends Component {
 
     // 3. 部署 wp-init 函数
     // wp-init 函数需要配置 vpc，cfs
+    let initFaasInputs = {}
+    const defaultInitFaasInputs = {
+      ...CONFIGS.wpInitFaas,
+      // 覆盖名称
+      name: `${CONFIGS.wpInitFaas.name}-${uuid}`,
+      environments: [
+        {
+          key: 'DB_USER',
+          value: dbConfig.DB_USER
+        },
+        {
+          key: 'DB_PASSWORD',
+          value: dbConfig.DB_PASSWORD
+        },
+        {
+          key: 'DB_HOST',
+          value: dbConfig.DB_HOST
+        },
+        {
+          key: 'DB_NAME',
+          value: dbConfig.DB_NAME
+        }
+      ]
+    }
+    if (inputs.faas) {
+      initFaasInputs = {
+        ...inputs.faas,
+        ...defaultInitFaasInputs
+      }
+    } else {
+      initFaasInputs = defaultInitFaasInputs
+    }
     const wpInitOutput = await deployFaas({
       instance: this,
       inputs: {
         ...inputs,
         ...{
-          faas: {
-            ...CONFIGS.wpInitFaas,
-            environments: [
-              {
-                key: 'DB_USER',
-                value: dbConfig.DB_USER
-              },
-              {
-                key: 'DB_PASSWORD',
-                value: dbConfig.DB_PASSWORD
-              },
-              {
-                key: 'DB_HOST',
-                value: dbConfig.DB_HOST
-              },
-              {
-                key: 'DB_NAME',
-                value: dbConfig.DB_NAME
-              }
-            ]
-          }
+          faas: initFaasInputs
         },
         cfs: [
           {
@@ -137,7 +175,7 @@ class ServerlessComponent extends Component {
       code: {
         zipPath: CONFIGS.wpInitFaas.zipPath,
         bucket: CONFIGS.bucket,
-        object: `${CONFIGS.wpInitFaas.name}.zip`
+        object: `${CONFIGS.wpInitFaas.name}-${uuid}.zip`
       }
     })
 
@@ -151,8 +189,7 @@ class ServerlessComponent extends Component {
       code: {
         zipPath: wpCodeZip,
         bucket: CONFIGS.bucket,
-        object: `wp-source-code.${getTimestamp()}.zip`,
-        // object: `wp-source-code.zip`,
+        object: `wp-source-code-${uuid}.zip`,
         injectShim: true
       }
     })
@@ -193,12 +230,19 @@ class ServerlessComponent extends Component {
     // 6. 部署 layer
     const layerOutput = await deployLayer({
       instance: this,
-      inputs,
+      inputs: {
+        ...inputs,
+        ...{
+          layer: {
+            name: `${CONFIGS.layer.name}-${uuid}`
+          }
+        }
+      },
       state: this.state.layer,
       code: {
         zipPath: CONFIGS.layer.zipPath,
         bucket: CONFIGS.bucket,
-        object: `${CONFIGS.layer.name}.zip`
+        object: `${CONFIGS.layer.name}-${uuid}.zip`
       }
     })
 
@@ -208,43 +252,52 @@ class ServerlessComponent extends Component {
 
     // 7. 部署 wp-server 函数
     // wp-server 函数需要配置 vpc，cfs，环境变量
+    let serverFaasInputs = {}
+    const defaultServerFaasConfig = {
+      ...CONFIGS.wpServerFaas,
+      // 覆盖函数名称
+      name: `${CONFIGS.wpServerFaas.name}-${uuid}`,
+      environments: [
+        {
+          key: 'DB_NAME',
+          value: dbConfig.DB_NAME
+        },
+        {
+          key: 'DB_USER',
+          value: dbConfig.DB_USER
+        },
+        {
+          key: 'DB_PASSWORD',
+          value: dbConfig.DB_PASSWORD
+        },
+        {
+          key: 'DB_HOST',
+          value: dbConfig.DB_HOST
+        },
+        {
+          key: 'MOUNT_DIR',
+          value: CONFIGS.wpServerFaas.wpCodeDir
+        },
+        {
+          key: 'HANDLER',
+          value: CONFIGS.wpServerFaas.appHandler
+        }
+      ]
+    }
+    if (inputs.faas) {
+      serverFaasInputs = {
+        ...inputs.faas,
+        ...defaultServerFaasConfig
+      }
+    } else {
+      serverFaasInputs = defaultServerFaasConfig
+    }
     const wpServerOutput = await deployFaas({
       instance: this,
       inputs: {
-        ...{
-          faas: CONFIGS.faas
-        },
         ...inputs,
         ...{
-          faas: {
-            ...CONFIGS.wpServerFaas,
-            environments: [
-              {
-                key: 'DB_NAME',
-                value: dbConfig.DB_NAME
-              },
-              {
-                key: 'DB_USER',
-                value: dbConfig.DB_USER
-              },
-              {
-                key: 'DB_PASSWORD',
-                value: dbConfig.DB_PASSWORD
-              },
-              {
-                key: 'DB_HOST',
-                value: dbConfig.DB_HOST
-              },
-              {
-                key: 'MOUNT_DIR',
-                value: CONFIGS.wpServerFaas.wpCodeDir
-              },
-              {
-                key: 'HANDLER',
-                value: CONFIGS.wpServerFaas.appHandler
-              }
-            ]
-          }
+          faas: serverFaasInputs
         },
         // 添加 layer
         layers: [
@@ -267,27 +320,31 @@ class ServerlessComponent extends Component {
       code: {
         zipPath: CONFIGS.wpServerFaas.zipPath,
         bucket: CONFIGS.bucket,
-        object: `${CONFIGS.wpServerFaas.name}.zip`
+        object: `${CONFIGS.wpServerFaas.name}-${uuid}.zip`
       }
     })
 
     this.state.wpServerFaas = wpServerOutput
 
     // 8. 创建 API 网关
+    if (inputs.apigw) {
+      inputs.apigw.name = `${CONFIGS.apigw.name}-${uuid}`
+      inputs.apigw.faas = {
+        name: wpServerOutput.name,
+        namespace: wpServerOutput.namespace
+      }
+    } else {
+      inputs.apigw = {}
+      inputs.apigw.name = `${CONFIGS.apigw.name}_${uuid}`
+      inputs.apigw.faas = {
+        name: wpServerOutput.name,
+        namespace: wpServerOutput.namespace
+      }
+    }
     const apigwOutput = await deployApigw({
       instance: this,
       state: this.state.apigw,
-      inputs: {
-        ...inputs,
-        ...{
-          apigw: {
-            faas: {
-              name: wpServerOutput.name,
-              namespace: wpServerOutput.namespace
-            }
-          }
-        }
-      }
+      inputs
     })
 
     // console.log('++++++++ apigwOutput', apigwOutput)

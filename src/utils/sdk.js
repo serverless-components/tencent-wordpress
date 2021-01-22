@@ -428,8 +428,8 @@ async function deployCfs({ instance, inputs, state = {} }) {
       fileSystemId: inputCfs.cfsId || state.cfsId,
 
       // 支持用户配置
-      fsName: inputs.fsName || DEFAULT_CONFIGS.name,
-      pGroupId: inputs.pGroupId || DEFAULT_CONFIGS.pGroupId
+      fsName: inputCfs.fsName || DEFAULT_CONFIGS.name,
+      pGroupId: inputCfs.pGroupId || DEFAULT_CONFIGS.pGroupId
     })
   )
 
@@ -454,7 +454,6 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
 
   const layer = new Layer(__TmpCredentials, region)
   const inputLayer = inputs.layer || {}
-  console.log('++++++ inputLayer', inputLayer)
   if (state.name && state.version && !inputLayer.force) {
     return state
   }
