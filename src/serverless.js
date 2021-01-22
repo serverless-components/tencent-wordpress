@@ -1,7 +1,7 @@
 const { Component } = require('@serverless/core')
 const { TypeError, ApiError } = require('tencent-component-toolkit/src/utils/error')
 const { sleep } = require('@ygkit/request')
-const { generateId, getTimestamp, getCodeZipPath, uploadCodeToCos } = require('./utils')
+const { generateId, getCodeZipPath, uploadCodeToCos } = require('./utils')
 const {
   invokeFaas,
   deployFaas,
