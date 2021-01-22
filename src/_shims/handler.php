@@ -29,8 +29,18 @@ $mapped_type = $extension_map[$extension];
 
 if ( $mapped_type && file_exists( $local_file_path ) ) {
     header("Content-Type: {$mapped_type}");
-    readfile($local_file_path);
-
+    $file_size=filesize($local_file_path);
+    header("Accept-Length:$file_size");
+    $fp=fopen($local_file_path,"r");
+    $buffer=1024;
+    $file_count=0;
+    while(!feof($fp)&&($file_size-$file_count>0)){
+        $file_data=fread($fp,$buffer);
+        //统计读了多少个字节
+        $file_count+=$buffer;
+        echo $file_data;
+    }
+    fclose($fp);
 } elseif ( $extension == "php" && file_exists( $local_file_path ) ) {
     header("X-ExecFile: {$local_file_path}");
     require( $local_file_path );
@@ -45,3 +55,4 @@ if ( $mapped_type && file_exists( $local_file_path ) ) {
     header("X-ExecFile: {$exec_file_path}");
     require( $exec_file_path );
 }
+

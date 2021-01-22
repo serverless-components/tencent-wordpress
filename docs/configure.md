@@ -21,13 +21,10 @@ inputs:
     exclude: # 被排除的文件或目录
       - .env
   faas: # 函数配置相关
-    timeout: 10 # 函数执行超时时间，单位秒
-    initTimeout: 3 # 初始化时间，单位秒
-    memorySize: 128 # 内存大小，单位MB
+    memorySize: 1024 # 内存大小，单位MB
   apigw: #  api网关配置
     id: service-xxx # api网关服务ID
     environment: test
-    timeout: 15
     customDomains: # 自定义域名绑定
       - domain: abc.com # 待绑定的自定义的域名
         certId: abcdefg # 待绑定自定义域名的证书唯一 ID
@@ -45,6 +42,7 @@ inputs:
     cfsId: cls-xxx
   db:
     clusterId: cluster-xxx
+    dbMode: SERVERLESS
 ```
 
 > 注意：`vpc`、`cfs`、`db` 三个配置的支持，是为了方便用户复用自己已有的云端资源，通常可以不用配置。`faas` 和 `apigw` 两个参数通常也可以不用配置，如果需要指定特定相关参数，比如函数的内存大小，API 网关自定义域名等，可以自定义配置。
@@ -92,8 +90,7 @@ exclude:
 
 | 参数名称   | 必选 |  类型  | 默认值 | 描述                                                               |
 | ---------- | :--: | :----: | :----: | :----------------------------------------------------------------- |
-| timeout    |  否  | number |  `3`   | 函数最长执行时间，单位为秒，可选值范围 1-900 秒，默认为 3 秒       |
-| memorySize |  否  | number | `128`  | 函数运行时内存大小，可选范围 64、128MB-3072MB，并且以 128MB 为阶梯 |
+| memorySize |  否  | number | `1024` | 函数运行时内存大小，可选范围 64、128MB-3072MB，并且以 128MB 为阶梯 |
 
 ### ApigwConfig
 
@@ -103,7 +100,6 @@ API 网关配置
 | ------------- | :--: | :------------------------------ | :-------- | :----------------------------------------------------- |
 | id            |  否  |                                 |           | API 网关服务 ID,如果存在将使用这个 API 网关服务        |
 | environment   |  否  | string                          | `release` | 发布环境. 目前支持三种发布环境: test、prepub、release. |
-| timeout       |  否  | number                          | `15`      | Api 超时时间，单位: 秒                                 |
 | customDomains |  否  | [CustomDomain](#CustomDomain)[] |           | 自定义 API 域名配置                                    |
 
 ##### CustomDomain
@@ -150,9 +146,10 @@ CFS - 文件存储配置
 
 TDSQL-C serverless 版本配置，如果要复用已有的数据库，可以到 https://console.cloud.tencent.com/cynosdb 查看已经存在的 Serverless TDSQL-C 数据库的集群 ID
 
-| 参数名称  | 类型   | 描述    |
-| --------- | ------ | :------ |
-| clusterId | string | 集群 ID |
+| 参数名称  | 类型   | 描述                                                                                      |
+| --------- | ------ | :---------------------------------------------------------------------------------------- |
+| clusterId | string | 集群 ID                                                                                   |
+| dbMode    | string | 数据库类型，默认为 `SERVERLESS` 类型，如果想创建正常的按量计费数据库，可以配置为 `NORMAL` |
 
 <!-- links -->
 

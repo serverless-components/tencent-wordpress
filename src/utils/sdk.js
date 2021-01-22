@@ -6,7 +6,7 @@ const {
   getDefaultFunctionName,
   deepClone,
   initializeStaticCosInputs,
-  initializeStaticCdnInputs
+  initializeStaticinputCdn
 } = require('./index')
 
 async function deployFaas({ instance, inputs, code, state = {} }) {
@@ -170,6 +170,7 @@ async function deployApigw({ instance, inputs, state = {} }) {
         method: 'ANY',
         enableCORS: inputApigw.cors === false ? false : true,
         serviceTimeout: inputApigw.timeout || DEFAULT_CONFIGS.timeout,
+        isBase64Encoded: true,
         function: {
           isIntegratedResponse: true,
           functionQualifier: inputApigw.qualifier || DEFAULT_CONFIGS.qualifier,
@@ -259,14 +260,14 @@ async function deployStatic({ instance, credentials, inputs, code }) {
     // 2. deploy cdn
     if (inputs.cdn) {
       const cdn = new Cdn(credentials)
-      const cdnInputs = await initializeStaticCdnInputs({
+      const inputCdn = await initializeStaticinputCdn({
         instance,
         inputs,
         origin: cosOutput.cosOrigin
       })
-      console.log(`Starting deploy cdn ${cdnInputs.domain}`)
-      const cdnDeployRes = await cdn.deploy(cdnInputs)
-      const protocol = cdnInputs.https ? 'https' : 'http'
+      console.log(`Starting deploy cdn ${inputCdn.domain}`)
+      const cdnDeployRes = await cdn.deploy(inputCdn)
+      const protocol = inputCdn.https ? 'https' : 'http'
       const cdnOutput = {
         domain: cdnDeployRes.domain,
         url: `${protocol}://${cdnDeployRes.domain}`,
@@ -274,7 +275,7 @@ async function deployStatic({ instance, credentials, inputs, code }) {
       }
       deployStaticOutpus.cdn = cdnOutput
 
-      console.log(`Deploy cdn ${cdnInputs.domain} success`)
+      console.log(`Deploy cdn ${inputCdn.domain} success`)
     }
 
     console.log(`Deployed static for ${framework} application successfully`)
@@ -374,7 +375,9 @@ async function deployDatabase({ instance, inputs, state = {} }) {
     // 支持配置 clusterId 进行复用
     clusterId: inputDb.clusterId || state.clusterId,
     // 支持用户配置
-    enablePublicAccess: inputDb.enablePublicAccess === true
+    enablePublicAccess: inputDb.enablePublicAccess === true,
+    dbMode: inputDb.dbMode || 'SERVERLESS',
+    payMode: inputDb.payMode === 1 ? 1 : 0
   })
 
   const outputs = await cynosdb.deploy(sdkInput)
@@ -486,6 +489,84 @@ async function removeLayer({ instance, region, state }) {
   return {}
 }
 
+async function deployCdn({ instance, inputs, state = {}, origin }) {
+  const { __TmpCredentials, CONFIGS, framework } = instance
+  const cdn = new Cdn(__TmpCredentials)
+  const inputCdn = inputs.cdn || {}
+
+  const sdkInputs = {
+    async: inputCdn.async === true,
+    area: inputCdn.area || 'mainland',
+    domain: inputCdn.domain,
+    serviceType: 'web',
+    origin: {
+      origins: [origin],
+      originType: 'domain',
+      originPullProtocol: 'https',
+      serverName: origin
+    },
+    followRedirect: CONFIGS.cdn.followRedirect,
+    autoRefresh: true,
+    refreshCdn: {
+      flushType: inputCdn.refreshType || 'delete',
+      urls: [`http://${inputCdn.domain}`, `https://${inputCdn.domain}`]
+    },
+    oldState: state,
+    cache: {
+      simpleCache: {
+        cacheRules: [
+          {
+            cacheType: 'file',
+            cacheContents: ['jpg', 'png', 'css', 'js', 'gif', 'svg', 'woff', 'ttf', 'font'],
+            // 默认缓存一年
+            cacheTime: 31536000
+          }
+        ],
+        followOrigin: 'on',
+        ignoreCacheControl: 'off',
+        ignoreSetCookie: 'off',
+        compareMaxAge: 'off'
+      }
+    }
+  }
+
+  if (inputCdn.https) {
+    // using these default configs, for making user's config more simple
+    inputCdn.forceRedirect = {
+      ...{
+        switch: 'on'
+      },
+      ...(inputCdn.forceRedirect || CONFIGS.cdn.forceRedirect)
+    }
+    if (!inputCdn.https.certId) {
+      throw new TypeError(`PARAMETER_${framework}_HTTPS`, 'https.certId is required')
+    }
+    inputCdn.https = {
+      ...CONFIGS.cdn.https,
+      ...{
+        http2: 'off',
+        certInfo: {
+          certId: inputCdn.https.certId
+        }
+      }
+    }
+  }
+
+  const outputs = await cdn.deploy(sdkInputs)
+  return outputs
+}
+
+async function removeCdn({ instance, region, state }) {
+  const { __TmpCredentials } = instance
+  const cdn = new Cdn(__TmpCredentials, region)
+
+  await cdn.remove({
+    domain: state.domain
+  })
+
+  return {}
+}
+
 module.exports = {
   invokeFaas,
   deployFaas,
@@ -501,5 +582,7 @@ module.exports = {
   deployCfs,
   removeCfs,
   deployLayer,
-  removeLayer
+  removeLayer,
+  deployCdn,
+  removeCdn
 }

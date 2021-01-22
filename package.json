@@ -13,7 +13,9 @@
     "prettier:fix": "prettier --write '**/*.{css,html,js,json,md,yaml,yml}'",
     "release": "semantic-release",
     "release-local": "node -r dotenv/config node_modules/semantic-release/bin/semantic-release --no-ci --dry-run",
-    "check-dependencies": "npx npm-check --skip-unused --update"
+    "check-dependencies": "npx npm-check --skip-unused --update",
+    "zip:faas:server": "zip -rjD ./src/fixtures/faas/wp-server.zip ./src/fixtures/faas/wp-server/*",
+    "zip:faas:init": "zip -rjD./src/fixtures/faas/wp-init.zip ./src/fixtures/faas/wp-init/*"
   },
   "husky": {
     "hooks": {
@@ -34,7 +36,9 @@
   },
   "author": "Tencent Cloud, Inc.",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "tencent-component-toolkit": "^1.20.9"
+  },
   "devDependencies": {
     "@commitlint/cli": "^8.3.5",
     "@commitlint/config-conventional": "^8.3.4",

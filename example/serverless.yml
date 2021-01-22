@@ -1,11 +1,13 @@
 org: orgDemo
 app: appDemo
 stage: dev
-component: wordpress
+component: wordpress@dev
 name: wordpressDemo
 
 inputs:
-  src:
-    src: ./wordpress
-    exclude:
-      - .env
+  # src:
+  #   src: ./wordpress
+  #   exclude:
+  #     - .env
+  db:
+    dbMode: NORMAL

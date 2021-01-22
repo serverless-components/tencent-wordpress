@@ -19,6 +19,23 @@ const CONFIGS = {
 
   database: 'wordpress',
 
+  // cdn 配置
+  cdn: {
+    autoRefresh: true,
+    followRedirect: {
+      switch: 'on'
+    },
+    forceRedirect: {
+      switch: 'on',
+      redirectType: 'https',
+      redirectStatusCode: 301
+    },
+    https: {
+      switch: 'on',
+      http2: 'on'
+    }
+  },
+
   // vpc 配置
   vpc: {
     vpcName: 'wp-vpc',
@@ -66,7 +83,7 @@ const CONFIGS = {
     cfsMountDir: '/mnt',
     wpCodeDir: '/mnt/wordpress',
     memorySize: 1024,
-    timeout: 300
+    timeout: 900
   },
 
   // 函数公共配置
@@ -84,7 +101,7 @@ const CONFIGS = {
     isDisabled: false,
     name: 'wp_apigw',
     cors: true,
-    timeout: 360,
+    timeout: 910,
     qualifier: '$DEFAULT',
     protocols: ['https'],
     environment: 'release'

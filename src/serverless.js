@@ -1,5 +1,6 @@
 const { Component } = require('@serverless/core')
 const { TypeError, ApiError } = require('tencent-component-toolkit/src/utils/error')
+const { sleep } = require('@ygkit/request')
 const { getTimestamp, getCodeZipPath, uploadCodeToCos } = require('./utils')
 const {
   invokeFaas,
@@ -14,7 +15,9 @@ const {
   deployDatabase,
   removeDatabase,
   deployLayer,
-  removeLayer
+  removeLayer,
+  deployCdn,
+  removeCdn
 } = require('./utils/sdk')
 const DEFAULT_CONFIGS = require('./config')
 
@@ -301,6 +304,20 @@ class ServerlessComponent extends Component {
       wpServerFaas: wpServerOutput
     }
 
+    if (inputs.cdn) {
+      const cdnOutput = await deployCdn({
+        instance: this,
+        state: this.state.apigw,
+        inputs,
+        origin: apigwOutput.domain
+      })
+
+      console.log('cdnOutput', cdnOutput)
+      this.state.cdn = cdnOutput
+
+      outputs.cdn = cdnOutput
+    }
+
     // 这里三个单独配置，是为了支持在线调试和实时日志
     this.state.region = region
     // 配置调试函数为 wp-server，因为它是真正 wordpress 服务函数
@@ -319,27 +336,31 @@ class ServerlessComponent extends Component {
 
     console.log(`Removing ${framework} App`)
 
-    // 并行 删除 wp-init 和 wp-server 函数
+    // 并行 删除 wp-init 和 API 网关
     await Promise.all([
       removeFaas({ instance: this, region, state: state.wpInitFaas }),
-      removeFaas({ instance: this, region, state: state.wpServerFaas })
+      removeApigw({ instance: this, region, state: state.apigw })
     ])
 
-    // 并行 删除 api 网关 和 层
-    await Promise.all([
-      removeApigw({ instance: this, region, state: state.apigw }),
-      removeLayer({ instance: this, region, state: state.layer })
-    ])
+    // 删除 wp-server 函数
+    await removeFaas({ instance: this, region, state: state.wpServerFaas })
 
-    // 并行 删除 文件系统 和 数据库
+    // 并行 删除 层、文件系统 和 数据库
     await Promise.all([
+      removeLayer({ instance: this, region, state: state.layer }),
       removeCfs({ instance: this, region, state: state.cfs }),
       removeDatabase({ instance: this, region, state: state.db })
     ])
 
     // 删除 VPC
     // 由于以上资源均依赖 VPC，所以需要最后删除
+    // 以上资源删除结束等待5s，以防后端异步逻辑未同步
+    await sleep(5000)
     await removeVpc({ instance: this, region, state: state.vpc })
+
+    if (state.cdn) {
+      await removeCdn({ instance: this, region, state: state.cdn })
+    }
 
     this.state = {}
 

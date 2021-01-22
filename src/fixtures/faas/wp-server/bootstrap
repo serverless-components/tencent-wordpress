@@ -1,0 +1,4 @@
+#!/bin/bash
+export PATH="/opt/bin:$PATH"
+export LD_LIBRARY_PATH=/opt/lib/:$LD_LIBRARY_PATH
+PHP_INI_SCAN_DIR=/opt/etc/php.d php -d extension_dir=/opt/lib/php/modules/ sl_handler.php 1>&2

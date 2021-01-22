@@ -81,5 +81,17 @@ actions:
         keys:
           clusterId:
             type: string
+      cdn:
+        type: object
+        keys:
+          domain:
+            type: string
+            required: true
+          https:
+            type: object
+            keys:
+              certId:
+                type: string
+                required: true
   remove:
     definition: Remove wordpress application
