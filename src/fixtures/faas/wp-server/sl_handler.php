@@ -161,7 +161,7 @@ while (true) {
     $request_json = json_decode($event['body'], true);
 
     // 解析uri
-    $uri = urldecode($request_json['path']);
+    $uri = $request_json['path'];
 
     if (array_key_exists('queryString', $request_json) && $request_json['queryString']) {
         $first = true;
@@ -203,6 +203,7 @@ while (true) {
             $body = base64_decode($body);
         }
     }
+
     $data = network_request("http://localhost:8000$uri", $request_json['httpMethod'], $headers, $body);
     $data["body"] = base64_encode($data["body"]);
     $data["isBase64Encoded"] = true;

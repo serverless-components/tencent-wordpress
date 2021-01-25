@@ -10,18 +10,50 @@ $extension_map = array(
     "js" => "application/javascript",
     "png" => "image/png",
     "jpeg" => "image/jpeg",
-    "jpg" => "image/jpeg",
-    "svg" => "image/svg+xml"
+    "jpg" => "application/x-jpg",
+    "svg" => "image/svg+xml",
+    "gif" => "image/gif",
+    "pdf" => "application/pdf",
+    "mp4" => "video/mpeg4",
+    "bmp" => "application/x-bmp",
+    "c4t" => "application/x-c4t",
+    "img" => "application/x-img",
+    "m2v" => "video/x-mpeg",
+    "mp2v" => "video/mpeg",
+    "mpeg" => "video/mpg",
+    "ppt" => "application/x-ppt",
+    "rm" => "application/vnd.rn-realmedia",
+    "swf" => "video/mpeg4",
+    "tif" => "image/tiff",
+    "tiff" => "image/tiff",
+    "vcf" => "text/x-vcard",
+    "wav" => "audio/wav",
+    "wma" => "audio/x-ms-wma",
+    "wmv" => "video/x-ms-wmv",
+    "apk" => "application/vnd.android.package-archive",
+    "m1v" => "video/x-mpeg",
+    "m3u" => "audio/mpegurl",
+    "mp2" => "audio/mp2",
+    "mp3" => "audio/mp3",
+    "mpa" => "video/x-mpg",
+    "mpe" => "video/x-mpeg",
+    "mpg" => "video/mpg",
+    "mpv2" => "video/mpeg",
+    "rmvb" => "application/vnd.rn-realmedia-vbr",
+    "torrent" => "application/x-bittorrent",
 );
 
+
 $request_uri = explode("?", $_SERVER['REQUEST_URI']);
-$local_file_path = $_SERVER['DOCUMENT_ROOT'] . $request_uri[0];
+$local_file_path = $_SERVER['DOCUMENT_ROOT'] . urldecode($request_uri[0]);
+
 
 if ( $local_file_path == __FILE__ ) {
     http_response_code(400);
     echo 'Sorry';
     exit();
 }
+
 
 $split = explode(".", $local_file_path);
 $extension = end($split);

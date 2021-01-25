@@ -51,16 +51,16 @@ inputs:
 
 主要的参数
 
-| 参数名称 | 必选 |            类型             |     默认值      | 描述                          |
-| -------- | :--: | :-------------------------: | :-------------: | :---------------------------- |
-| src      |  是  |   [Src](#Src) 或者 string   |                 | wordpress 代码目录            |
-| region   |  否  |                             |  `ap-shanghai`  | 项目部署所在区域              |
-| zone     |  否  |                             | `ap-shanghai-2` | 分区                          |
-| faas     |  否  |  [FaasConfig](#FaasConfig)  |                 | 函数配置                      |
-| apigw    |  否  | [ApigwConfig](#ApigwConfig) |                 | API 网关配置                  |
-| vpc      |  否  |         [Vpc](#Vpc)         |                 | 私有网络配置                  |
-| cfs      |  否  |         [Cfs](#Cfs)         |                 | 文件存储配置                  |
-| db       |  否  |          [Db](#Db)          |                 | TDSQL-C serverless 数据库配置 |
+| 参数名称 | 必选 |            类型             |     默认值      | 描述                                                       |
+| -------- | :--: | :-------------------------: | :-------------: | :--------------------------------------------------------- |
+| src      |  否  |   [Src](#Src) 或者 string   |                 | wordpress 代码目录，如果不指定，会自动基于云端模板代码部署 |
+| region   |  否  |                             |  `ap-shanghai`  | 项目部署所在区域                                           |
+| zone     |  否  |                             | `ap-shanghai-2` | 分区                                                       |
+| faas     |  否  |  [FaasConfig](#FaasConfig)  |                 | 函数配置                                                   |
+| apigw    |  否  | [ApigwConfig](#ApigwConfig) |                 | API 网关配置                                               |
+| vpc      |  否  |         [Vpc](#Vpc)         |                 | 私有网络配置                                               |
+| cfs      |  否  |         [Cfs](#Cfs)         |                 | 文件存储配置                                               |
+| db       |  否  |          [Db](#Db)          |                 | TDSQL-C serverless 数据库配置                              |
 
 > 注意：由于 Serverless Mysql 数据库 当前支持可用区为：`ap-guangzhou-4`, `ap-shanghai-2`, `ap-beijing-3`, `ap-nanjing-1`，所以本组件也只支持这四个分区。
 
