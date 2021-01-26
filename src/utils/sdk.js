@@ -76,7 +76,8 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     const result = {
       name: outputs.FunctionName,
       runtime: outputs.Runtime,
-      namespace: outputs.Namespace
+      namespace: outputs.Namespace,
+      memorySize: outputs.MemorySize
     }
 
     if (outputs.Layers && outputs.Layers.length > 0) {

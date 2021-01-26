@@ -62,6 +62,7 @@ class ServerlessComponent extends Component {
 
     const { framework, CONFIGS, __TmpCredentials } = this
     const region = inputs.region || CONFIGS.region
+    const zone = inputs.zone || CONFIGS.zone
 
     console.log(`Deploying ${framework} Application`)
 
@@ -352,6 +353,8 @@ class ServerlessComponent extends Component {
     this.state.apigw = apigwOutput
 
     const outputs = {
+      region,
+      zone,
       vpc: vpcOutput,
       cfs: cfsOutput,
       db: dbOutput,
