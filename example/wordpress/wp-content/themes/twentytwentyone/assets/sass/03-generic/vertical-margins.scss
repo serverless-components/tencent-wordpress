@@ -3,7 +3,7 @@
  *
  * - Set vertical margins and responsive widths on
  *   top-level wrappers and content wrappers
- * - `--global--width-content` is a responsive variable
+ * - `--global--width-content` is a responsive veriable
  * - See: globals/_global-width-responsive.scss
  */
 
@@ -32,7 +32,7 @@
 
 /**
  * Site-main children wrappers
- * - Add double vertical margins here for clearer hierarchy
+ * - Add double vertical margins here for clearer heirarchy
  */
 .site-main > * {
 	margin-top: calc(3 * var(--global--spacing-vertical));

@@ -139,7 +139,7 @@ window.wp = window.wp || {};
 		/**
 		 * Adds onclick events to the apply buttons.
 		 */
-		$('#doaction').click(function(e){
+		$('#doaction, #doaction2').click(function(e){
 			var n;
 
 			t.whichBulkButtonId = $( this ).attr( 'id' );

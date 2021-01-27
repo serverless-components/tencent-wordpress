@@ -306,8 +306,7 @@ function wp_authenticate_cookie( $user, $username, $password ) {
  *                                          callback failed authentication.
  * @param string                $username   Username for authentication.
  * @param string                $password   Password for authentication.
- * @return WP_User|WP_Error|null WP_User on success, WP_Error on failure, null if
- *                               null is passed in and this isn't an API request.
+ * @return WP_User|WP_Error WP_User on success, WP_Error on failure.
  */
 function wp_authenticate_application_password( $input_user, $username, $password ) {
 	if ( $input_user instanceof WP_User ) {
@@ -449,8 +448,8 @@ function wp_authenticate_application_password( $input_user, $username, $password
  *
  * @since 5.6.0
  *
- * @param int|false $input_user User ID if one has been determined, false otherwise.
- * @return int|false The authenticated user ID if successful, false otherwise.
+ * @param int|bool $input_user User ID if one has been determined, false otherwise.
+ * @return int|bool The authenticated user ID if successful, false otherwise.
  */
 function wp_validate_application_password( $input_user ) {
 	// Don't authenticate twice.
@@ -462,8 +461,8 @@ function wp_validate_application_password( $input_user ) {
 		return $input_user;
 	}
 
-	// Both $_SERVER['PHP_AUTH_USER'] and $_SERVER['PHP_AUTH_PW'] must be set in order to attempt authentication.
-	if ( ! isset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'] ) ) {
+	// Check that we're trying to authenticate
+	if ( ! isset( $_SERVER['PHP_AUTH_USER'] ) ) {
 		return $input_user;
 	}
 
@@ -515,8 +514,8 @@ function wp_authenticate_spam_check( $user ) {
  *
  * @since 3.9.0
  *
- * @param int|false $user_id The user ID (or false) as received from
- *                           the `determine_current_user` filter.
+ * @param int|bool $user_id The user ID (or false) as received from
+ *                          the `determine_current_user` filter.
  * @return int|false User ID if validated, false otherwise. If a user ID from
  *                   an earlier filter callback is received, that value is returned.
  */
@@ -1259,9 +1258,9 @@ function setup_userdata( $for_user_id = 0 ) {
  *     @type string       $order                   Whether to order users in ascending or descending
  *                                                 order. Accepts 'ASC' (ascending) or 'DESC' (descending).
  *                                                 Default 'ASC'.
- *     @type int[]|string $include                 Array or comma-separated list of user IDs to include.
+ *     @type array|string $include                 Array or comma-separated list of user IDs to include.
  *                                                 Default empty.
- *     @type int[]|string $exclude                 Array or comma-separated list of user IDs to exclude.
+ *     @type array|string $exclude                 Array or comma-separated list of user IDs to exclude.
  *                                                 Default empty.
  *     @type bool|int     $multi                   Whether to skip the ID attribute on the 'select' element.
  *                                                 Accepts 1|true or 0|false. Default 0|false.
@@ -1284,9 +1283,9 @@ function setup_userdata( $for_user_id = 0 ) {
  *     @type string|array $role                    An array or a comma-separated list of role names that users must
  *                                                 match to be included in results. Note that this is an inclusive
  *                                                 list: users must match *each* role. Default empty.
- *     @type string[]     $role__in                An array of role names. Matched users must have at least one of
+ *     @type array        $role__in                An array of role names. Matched users must have at least one of
  *                                                 these roles. Default empty array.
- *     @type string[]     $role__not_in            An array of role names to exclude. Users matching one or more of
+ *     @type array        $role__not_in            An array of role names to exclude. Users matching one or more of
  *                                                 these roles will not be included in results. Default empty array.
  * }
  * @return string HTML dropdown list of users.
@@ -1537,7 +1536,7 @@ function sanitize_user_field( $field, $value, $user_id, $context ) {
  * @since 3.0.0
  *
  * @param object|WP_User $user User object or database row to be cached
- * @return void|false Void on success, false on failure.
+ * @return bool|null Returns false on failure.
  */
 function update_user_caches( $user ) {
 	if ( $user instanceof WP_User ) {
@@ -2978,7 +2977,7 @@ function _wp_get_current_user() {
 	 *
 	 * @since 3.9.0
 	 *
-	 * @param int|false $user_id User ID if one has been determined, false otherwise.
+	 * @param int|bool $user_id User ID if one has been determined, false otherwise.
 	 */
 	$user_id = apply_filters( 'determine_current_user', false );
 	if ( ! $user_id ) {
@@ -3123,7 +3122,7 @@ function new_user_email_admin_notice() {
 }
 
 /**
- * Get all personal data request types.
+ * Get all user privacy request types.
  *
  * @since 4.9.6
  * @access private
@@ -3805,7 +3804,7 @@ function wp_create_user_request( $email_address = '', $action_name = '', $reques
 	);
 
 	if ( $requests_query->found_posts ) {
-		return new WP_Error( 'duplicate_request', __( 'An incomplete personal data request for this email address already exists.' ) );
+		return new WP_Error( 'duplicate_request', __( 'An incomplete user privacy request for this email address already exists.' ) );
 	}
 
 	$request_id = wp_insert_post(
@@ -3866,14 +3865,14 @@ function wp_user_request_action_description( $action_name ) {
  * @since 4.9.6
  *
  * @param string $request_id ID of the request created via wp_create_user_request().
- * @return true|WP_Error True on success, `WP_Error` on failure.
+ * @return bool|WP_Error True on success, `WP_Error` on failure.
  */
 function wp_send_user_request( $request_id ) {
 	$request_id = absint( $request_id );
 	$request    = wp_get_user_request( $request_id );
 
 	if ( ! $request ) {
-		return new WP_Error( 'invalid_request', __( 'Invalid personal data request.' ) );
+		return new WP_Error( 'invalid_request', __( 'Invalid user privacy request.' ) );
 	}
 
 	// Localize message content for user; fallback to site default for visitors.
@@ -4050,7 +4049,7 @@ function wp_generate_user_request_key( $request_id ) {
  *
  * @param string $request_id ID of the request being confirmed.
  * @param string $key        Provided key to validate.
- * @return true|WP_Error True on success, WP_Error on failure.
+ * @return bool|WP_Error True on success, WP_Error on failure.
  */
 function wp_validate_user_request_key( $request_id, $key ) {
 	global $wp_hasher;
@@ -4061,15 +4060,15 @@ function wp_validate_user_request_key( $request_id, $key ) {
 	$key_request_time = $request->modified_timestamp;
 
 	if ( ! $request || ! $saved_key || ! $key_request_time ) {
-		return new WP_Error( 'invalid_request', __( 'Invalid personal data request.' ) );
+		return new WP_Error( 'invalid_request', __( 'Invalid user privacy request.' ) );
 	}
 
 	if ( ! in_array( $request->status, array( 'request-pending', 'request-failed' ), true ) ) {
-		return new WP_Error( 'expired_request', __( 'This personal data request has expired.' ) );
+		return new WP_Error( 'expired_request', __( 'This user privacy request has expired.' ) );
 	}
 
 	if ( empty( $key ) ) {
-		return new WP_Error( 'missing_key', __( 'The confirmation key is missing from this personal data request.' ) );
+		return new WP_Error( 'missing_key', __( 'This user privacy request is missing the confirmation key.' ) );
 	}
 
 	if ( empty( $wp_hasher ) ) {
@@ -4088,11 +4087,11 @@ function wp_validate_user_request_key( $request_id, $key ) {
 	$expiration_time     = $key_request_time + $expiration_duration;
 
 	if ( ! $wp_hasher->CheckPassword( $key, $saved_key ) ) {
-		return new WP_Error( 'invalid_key', __( 'The confirmation key is invalid for this personal data request.' ) );
+		return new WP_Error( 'invalid_key', __( 'This user privacy request confirmation key is invalid.' ) );
 	}
 
 	if ( ! $expiration_time || time() > $expiration_time ) {
-		return new WP_Error( 'expired_key', __( 'The confirmation key has expired for this personal data request.' ) );
+		return new WP_Error( 'expired_key', __( 'This user privacy request confirmation key has expired.' ) );
 	}
 
 	return true;

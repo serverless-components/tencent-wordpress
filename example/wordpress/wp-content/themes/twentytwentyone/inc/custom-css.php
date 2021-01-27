@@ -4,13 +4,13 @@
  *
  * @package WordPress
  * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  */
 
 /**
  * Generate CSS.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @param string $selector The CSS selector.
  * @param string $style The CSS style.

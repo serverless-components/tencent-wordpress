@@ -178,12 +178,13 @@
 		$( '#find-posts-close' ).click( findPosts.close );
 
 		// Binds the bulk action events to the submit buttons.
-		$( '#doaction' ).click( function( event ) {
+		$( '#doaction, #doaction2' ).click( function( event ) {
 
 			/*
-			 * Handle the bulk action based on its value.
+			 * Retrieves all select elements for bulk actions that have a name starting with `action`
+			 * and handle its action based on its value.
 			 */
-			$( 'select[name="action"]' ).each( function() {
+			$( 'select[name^="action"]' ).each( function() {
 				var optionValue = $( this ).val();
 
 				if ( 'attach' === optionValue ) {

@@ -451,8 +451,8 @@ function has_excerpt( $post = 0 ) {
  *
  * @since 2.7.0
  *
- * @param string|string[] $class   One or more classes to add to the class list.
- * @param int|WP_Post     $post_id Optional. Post ID or post object. Defaults to the global `$post`.
+ * @param string|array $class   One or more classes to add to the class list.
+ * @param int|WP_Post  $post_id Optional. Post ID or post object. Defaults to the global `$post`.
  */
 function post_class( $class = '', $post_id = null ) {
 	// Separates classes with a single space, collates classes for post DIV.
@@ -1645,7 +1645,7 @@ function wp_get_attachment_link( $id = 0, $size = 'thumbnail', $permalink = fals
 	 *                                an array of width and height values in pixels (in that order).
 	 * @param bool         $permalink Whether to add permalink to image. Default false.
 	 * @param bool         $icon      Whether to include an icon.
-	 * @param string|false $text      If string, will be link text.
+	 * @param string|bool  $text      If string, will be link text.
 	 * @param array|string $attr      Array or string of attributes.
 	 */
 	return apply_filters( 'wp_get_attachment_link', "<a href='" . esc_url( $url ) . "'>$link_text</a>", $id, $size, $permalink, $icon, $text, $attr );
@@ -1749,7 +1749,7 @@ function get_the_password_form( $post = 0 ) {
  * @since 4.2.0 The `$template` parameter was changed to also accept an array of page templates.
  * @since 4.7.0 Now works with any post type, not just pages.
  *
- * @param string|string[] $template The specific template filename or array of templates to match.
+ * @param string|array $template The specific template filename or array of templates to match.
  * @return bool True on success, false on failure.
  */
 function is_page_template( $template = '' ) {

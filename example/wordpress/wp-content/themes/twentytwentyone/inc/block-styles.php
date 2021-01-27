@@ -6,14 +6,14 @@
  *
  * @package WordPress
  * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  */
 
 if ( function_exists( 'register_block_style' ) ) {
 	/**
 	 * Register block styles.
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */

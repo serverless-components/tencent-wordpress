@@ -451,7 +451,7 @@ wp.textWidgets = ( function( $ ) {
 			return;
 		}
 
-		idBase = widgetForm.find( '.id_base' ).val();
+		idBase = widgetForm.find( '> .widget-control-actions > .id_base' ).val();
 		if ( -1 === component.idBases.indexOf( idBase ) ) {
 			return;
 		}
@@ -542,7 +542,9 @@ wp.textWidgets = ( function( $ ) {
 			});
 
 			// Accessibility mode.
-			component.setupAccessibleMode();
+			$( window ).on( 'load', function() {
+				component.setupAccessibleMode();
+			});
 		});
 	};
 

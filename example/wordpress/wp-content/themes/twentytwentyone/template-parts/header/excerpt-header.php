@@ -4,7 +4,7 @@
  *
  * @package WordPress
  * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  */
 
 // Don't show the title if the post-format is `aside` or `status`.

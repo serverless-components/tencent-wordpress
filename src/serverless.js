@@ -216,7 +216,7 @@ class ServerlessComponent extends Component {
     if (invokeOutput.status !== 'success') {
       throw new ApiError({
         type: 'API_WORDPRESS_SYNC_FAAS_INVOKE_ERROR',
-        message: invokeOutput.reason
+        message: `[INIT ERROR]: ${invokeOutput.reason}`
       })
     } else {
       const dbRetryCount = invokeOutput.syncDbRetryNumber

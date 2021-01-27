@@ -209,8 +209,6 @@ class WP_REST_Plugins_Controller extends WP_REST_Controller {
 	 * @return true|WP_Error True if can read, a WP_Error instance otherwise.
 	 */
 	protected function check_read_permission( $plugin ) {
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-
 		if ( ! $this->is_plugin_installed( $plugin ) ) {
 			return new WP_Error( 'rest_plugin_not_found', __( 'Plugin not found.' ), array( 'status' => 404 ) );
 		}
@@ -586,7 +584,7 @@ class WP_REST_Plugins_Controller extends WP_REST_Controller {
 		$response->add_links( $this->prepare_links( $item ) );
 
 		/**
-		 * Filters plugin data for a REST API response.
+		 * Filters the plugin data for a response.
 		 *
 		 * @since 5.5.0
 		 *

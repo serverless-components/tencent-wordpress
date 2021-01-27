@@ -6,7 +6,7 @@
  *
  * @package WordPress
  * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  */
 
 // This theme requires WordPress 5.3 or later.
@@ -22,7 +22,7 @@ if ( ! function_exists( 'twenty_twenty_one_setup' ) ) {
 	 * runs before the init hook. The init hook is too late for some features, such
 	 * as indicating support for post thumbnails.
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -345,7 +345,7 @@ add_action( 'after_setup_theme', 'twenty_twenty_one_setup' );
 /**
  * Register widget area.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
  *
@@ -372,7 +372,7 @@ add_action( 'widgets_init', 'twenty_twenty_one_widgets_init' );
  *
  * Priority 0 to make it available to lower priority callbacks.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @global int $content_width Content width.
  *
@@ -389,14 +389,14 @@ add_action( 'after_setup_theme', 'twenty_twenty_one_content_width', 0 );
 /**
  * Enqueue scripts and styles.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
 function twenty_twenty_one_scripts() {
 	// Note, the is_IE global variable is defined by WordPress and is used
 	// to detect if the current browser is internet explorer.
-	global $is_IE, $wp_scripts;
+	global $is_IE;
 	if ( $is_IE ) {
 		// If IE 11 or below, use a flattened stylesheet with static values replacing CSS Variables.
 		wp_enqueue_style( 'twenty-twenty-one-style', get_template_directory_uri() . '/assets/css/ie.css', array(), wp_get_theme()->get( 'Version' ) );
@@ -416,31 +416,12 @@ function twenty_twenty_one_scripts() {
 		wp_enqueue_script( 'comment-reply' );
 	}
 
-	// Register the IE11 polyfill file.
 	wp_register_script(
-		'twenty-twenty-one-ie11-polyfills-asset',
+		'twenty-twenty-one-ie11-polyfills',
 		get_template_directory_uri() . '/assets/js/polyfills.js',
 		array(),
 		wp_get_theme()->get( 'Version' ),
 		true
-	);
-
-	// Register the IE11 polyfill loader.
-	wp_register_script(
-		'twenty-twenty-one-ie11-polyfills',
-		null,
-		array(),
-		wp_get_theme()->get( 'Version' ),
-		true
-	);
-	wp_add_inline_script(
-		'twenty-twenty-one-ie11-polyfills',
-		wp_get_script_polyfill(
-			$wp_scripts,
-			array(
-				'Element.prototype.matches && Element.prototype.closest && window.NodeList && NodeList.prototype.forEach' => 'twenty-twenty-one-ie11-polyfills-asset',
-			)
-		)
 	);
 
 	// Main navigation scripts.
@@ -468,7 +449,7 @@ add_action( 'wp_enqueue_scripts', 'twenty_twenty_one_scripts' );
 /**
  * Enqueue block editor script.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
@@ -507,7 +488,7 @@ add_action( 'wp_print_footer_scripts', 'twenty_twenty_one_skip_link_focus_fix' )
 
 /** Enqueue non-latin language styles
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
@@ -553,7 +534,7 @@ new Twenty_Twenty_One_Dark_Mode();
 /**
  * Enqueue scripts for the customizer preview.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
@@ -579,7 +560,7 @@ add_action( 'customize_preview_init', 'twentytwentyone_customize_preview_init' )
 /**
  * Enqueue scripts for the customizer.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
@@ -598,7 +579,7 @@ add_action( 'customize_controls_enqueue_scripts', 'twentytwentyone_customize_con
 /**
  * Calculate classes for the main <html> element.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */
@@ -613,7 +594,7 @@ function twentytwentyone_the_html_classes() {
 /**
  * Add "is-IE" class to body if the user is on Internet Explorer.
  *
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  *
  * @return void
  */

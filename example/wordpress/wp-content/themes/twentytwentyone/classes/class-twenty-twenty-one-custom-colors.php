@@ -4,7 +4,7 @@
  *
  * @package WordPress
  * @subpackage Twenty_Twenty_One
- * @since Twenty Twenty-One 1.0
+ * @since 1.0.0
  */
 
 /**
@@ -17,7 +17,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 */
 	public function __construct() {
 
@@ -38,7 +38,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @param string $background_color The background color.
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @return string (hex color)
 	 */
@@ -55,7 +55,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @param string|null $context Can be "editor" or null.
 	 *
@@ -74,8 +74,8 @@ class Twenty_Twenty_One_Custom_Colors {
 			$theme_css .= '--button--color-text-hover: ' . $this->custom_get_readable_color( $background_color ) . ';';
 
 			if ( '#fff' === $this->custom_get_readable_color( $background_color ) ) {
-				$theme_css .= '--table--stripes-border-color: rgba(240, 240, 240, 0.15);';
-				$theme_css .= '--table--stripes-background-color: rgba(240, 240, 240, 0.15);';
+				$theme_css .= '--table--stripes-border-color: var(--global--color-dark-gray);';
+				$theme_css .= '--table--stripes-background-color: var(--global--color-dark-gray);';
 			}
 		}
 
@@ -89,7 +89,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -104,7 +104,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @return void
 	 */
@@ -129,7 +129,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @param string $hex The HEX color.
 	 *
@@ -160,7 +160,7 @@ class Twenty_Twenty_One_Custom_Colors {
 	 *
 	 * @access public
 	 *
-	 * @since Twenty Twenty-One 1.0
+	 * @since 1.0.0
 	 *
 	 * @param array $classes The existing body classes.
 	 *
