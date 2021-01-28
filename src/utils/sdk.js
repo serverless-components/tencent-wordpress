@@ -95,7 +95,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
   return formatOutputs(outputs)
 }
 
-async function removeFaas({ instance, region, state }) {
+async function removeFaas({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
   const faasName = state.name
   if (faasName) {
@@ -203,7 +203,7 @@ async function deployApigw({ instance, inputs, state = {} }) {
   return formatOutputs(apigwOutput)
 }
 
-async function removeApigw({ instance, region, state }) {
+async function removeApigw({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
   const apigw = new Apigw(__TmpCredentials, region)
   // if disable apigw, no need to remove
@@ -337,13 +337,15 @@ async function deployVpc({ instance, inputs, state = {} }) {
   return vpcOutput
 }
 
-async function removeVpc({ instance, region, state }) {
+async function removeVpc({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
-  const vpc = new Vpc(__TmpCredentials, region)
-  await vpc.remove({
-    vpcId: state.vpcId,
-    subnetId: state.subnetId
-  })
+  if (state.vpcId && state.subnetId) {
+    const vpc = new Vpc(__TmpCredentials, region)
+    await vpc.remove({
+      vpcId: state.vpcId,
+      subnetId: state.subnetId
+    })
+  }
 
   return {}
 }
@@ -386,13 +388,15 @@ async function deployDatabase({ instance, inputs, state = {} }) {
   return formatOutputs(outputs)
 }
 
-async function removeDatabase({ instance, region, state }) {
+async function removeDatabase({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
-  const cynosdb = new Cynosdb(__TmpCredentials, region)
+  if (state.clusterId) {
+    const cynosdb = new Cynosdb(__TmpCredentials, region)
 
-  await cynosdb.remove({
-    clusterId: state.clusterId
-  })
+    await cynosdb.remove({
+      clusterId: state.clusterId
+    })
+  }
 
   return {}
 }
@@ -437,14 +441,16 @@ async function deployCfs({ instance, inputs, state = {} }) {
   return formatOutputs(outputs)
 }
 
-async function removeCfs({ instance, region, state }) {
+async function removeCfs({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
   const cfs = new Cfs(__TmpCredentials, region)
 
-  await cfs.remove({
-    fsName: state.name,
-    fileSystemId: state.cfsId
-  })
+  if (state.name && state.cfsId) {
+    await cfs.remove({
+      fsName: state.name,
+      fileSystemId: state.cfsId
+    })
+  }
 
   return {}
 }
@@ -477,14 +483,16 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
   return outputs
 }
 
-async function removeLayer({ instance, region, state }) {
+async function removeLayer({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
   const layer = new Layer(__TmpCredentials, region)
 
-  await layer.remove({
-    name: state.name,
-    version: state.version
-  })
+  if (state.name && state.version) {
+    await layer.remove({
+      name: state.name,
+      version: state.version
+    })
+  }
 
   return {}
 }
@@ -556,13 +564,15 @@ async function deployCdn({ instance, inputs, state = {}, origin }) {
   return outputs
 }
 
-async function removeCdn({ instance, region, state }) {
+async function removeCdn({ instance, region, state = {} }) {
   const { __TmpCredentials } = instance
   const cdn = new Cdn(__TmpCredentials, region)
 
-  await cdn.remove({
-    domain: state.domain
-  })
+  if (state.domain) {
+    await cdn.remove({
+      domain: state.domain
+    })
+  }
 
   return {}
 }
