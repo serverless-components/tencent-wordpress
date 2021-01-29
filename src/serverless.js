@@ -1,5 +1,5 @@
 const { Component } = require('@serverless/core')
-const { TypeError, ApiError } = require('tencent-component-toolkit/src/utils/error')
+const { ApiTypeError, ApiError } = require('tencent-component-toolkit/lib/utils/error')
 const { sleep } = require('@ygkit/request')
 const { generateId, getCodeZipPath, uploadCodeToCos } = require('./utils')
 const {
@@ -26,7 +26,7 @@ class ServerlessComponent extends Component {
     const { tmpSecrets } = this.credentials.tencent
 
     if (!tmpSecrets || !tmpSecrets.TmpSecretId) {
-      throw new TypeError(
+      throw new ApiTypeError(
         'CREDENTIAL',
         'Cannot get secretId/Key, your account could be sub-account and does not have the access to use SLS_QcsRole, please make sure the role exists first, then visit https://cloud.tencent.com/document/product/1154/43006, follow the instructions to bind the role to your account.'
       )
@@ -55,7 +55,7 @@ class ServerlessComponent extends Component {
     let uuid = null
     if (!this.state.uuid) {
       uuid = generateId()
-      this.state.uuid = generateId()
+      this.state.uuid = uuid
     } else {
       ;({ uuid } = this.state)
     }
@@ -64,11 +64,11 @@ class ServerlessComponent extends Component {
     const region = inputs.region || CONFIGS.region
     const zone = inputs.zone || CONFIGS.zone
 
-    console.log(`Deploying ${framework} Application`)
+    console.log(`Deploying ${framework} Application (${uuid})`)
 
     // 1. 部署VPC
     if (inputs.vpc) {
-      inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}-${uuid}`
+      inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}`
       inputs.vpc.subnetName = `${CONFIGS.vpc.subnetName}-${uuid}`
     } else {
       inputs.vpc = {}
@@ -406,6 +406,8 @@ class ServerlessComponent extends Component {
     await removeFaas({ instance: this, region, state: state.wpServerFaas })
 
     // 并行 删除 层、文件系统 和 数据库
+    // 以上资源删除结束等待3s，以防后端异步逻辑未同步
+    await sleep(3000)
     await Promise.all([
       removeLayer({ instance: this, region, state: state.layer }),
       removeCfs({ instance: this, region, state: state.cfs }),
@@ -414,8 +416,8 @@ class ServerlessComponent extends Component {
 
     // 删除 VPC
     // 由于以上资源均依赖 VPC，所以需要最后删除
-    // 以上资源删除结束等待5s，以防后端异步逻辑未同步
-    await sleep(5000)
+    // 以上资源删除结束等待3s，以防后端异步逻辑未同步
+    await sleep(3000)
     await removeVpc({ instance: this, region, state: state.vpc })
 
     if (state.cdn) {

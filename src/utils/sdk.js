@@ -461,9 +461,7 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
 
   const layer = new Layer(__TmpCredentials, region)
   const inputLayer = inputs.layer || {}
-  if (state.name && state.version && !inputLayer.force) {
-    return state
-  }
+
   const DEFAULT_CONFIGS = CONFIGS.layer
   const { bucket, object } = await uploadCodeToCos({ instance, region, code })
   const appId = instance.getAppId()
@@ -473,7 +471,7 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
     bucket: removeAppid(bucket, appId),
     object,
     region,
-    name: inputLayer.name || DEFAULT_CONFIGS.name,
+    name: inputLayer.name || state.name || DEFAULT_CONFIGS.name,
     runtimes: DEFAULT_CONFIGS.runtimes,
     description: CONFIGS.description
   }

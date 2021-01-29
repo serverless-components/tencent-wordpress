@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 const { Cos } = require('tencent-component-toolkit')
 const download = require('download')
-const { TypeError } = require('tencent-component-toolkit/src/utils/error')
+const { ApiTypeError } = require('tencent-component-toolkit/lib/utils/error')
 const AdmZip = require('adm-zip')
 
 const generateId = () =>
@@ -83,7 +83,7 @@ const getCodeZipPath = async ({ instance, inputs }) => {
         filename: `${filename}.zip`
       })
     } catch (e) {
-      throw new TypeError(`DOWNLOAD_TEMPLATE`, 'Download default template failed.')
+      throw new ApiTypeError(`DOWNLOAD_TEMPLATE`, 'Download default template failed.')
     }
     zipPath = `${downloadPath}/${filename}.zip`
   } else {
@@ -205,7 +205,7 @@ const initializeStaticCosInputs = async ({ instance, inputs, appId, codeZipPath 
       staticCosInputs
     }
   } catch (e) {
-    throw new TypeError(`UTILS_${framework}_initializeStaticCosInputs`, e.message, e.stack)
+    throw new ApiTypeError(`UTILS_${framework}_initializeStaticCosInputs`, e.message, e.stack)
   }
 }
 
@@ -235,7 +235,7 @@ const initializeStaticCdnInputs = async ({ instance, inputs, origin }) => {
         ...(cdnConfig.forceRedirect || CONFIGS.cdn.forceRedirect)
       }
       if (!cdnConfig.https.certId) {
-        throw new TypeError(`PARAMETER_${framework}_HTTPS`, 'https.certId is required')
+        throw new ApiTypeError(`PARAMETER_${framework}_HTTPS`, 'https.certId is required')
       }
       cdnInputs.https = {
         ...CONFIGS.cdn.https,
@@ -256,7 +256,7 @@ const initializeStaticCdnInputs = async ({ instance, inputs, origin }) => {
 
     return cdnInputs
   } catch (e) {
-    throw new TypeError(`UTILS_${framework}_initializeStaticCdnInputs`, e.message, e.stack)
+    throw new ApiTypeError(`UTILS_${framework}_initializeStaticCdnInputs`, e.message, e.stack)
   }
 }
 
