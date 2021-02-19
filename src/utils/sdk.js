@@ -96,14 +96,18 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
 }
 
 async function removeFaas({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  const faasName = state.name
-  if (faasName) {
-    const scf = new Scf(__TmpCredentials, region)
-    await scf.remove({
-      functionName: faasName,
-      namespace: state.namespace
-    })
+  try {
+    const { __TmpCredentials } = instance
+    const faasName = state.name
+    if (faasName) {
+      const scf = new Scf(__TmpCredentials, region)
+      await scf.remove({
+        functionName: faasName,
+        namespace: state.namespace
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE FAAS ERROR] ${e.message}`)
   }
   return {}
 }
@@ -204,20 +208,24 @@ async function deployApigw({ instance, inputs, state = {} }) {
 }
 
 async function removeApigw({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  const apigw = new Apigw(__TmpCredentials, region)
-  // if disable apigw, no need to remove
-  if (state.isDisabled !== true) {
-    const serviceId = state.id
-    if (serviceId) {
-      await apigw.remove({
-        created: state.created,
-        serviceId: serviceId,
-        environment: state.environment,
-        apiList: state.apis,
-        customDomains: state.customDomains
-      })
+  try {
+    const { __TmpCredentials } = instance
+    const apigw = new Apigw(__TmpCredentials, region)
+    // if disable apigw, no need to remove
+    if (state.isDisabled !== true) {
+      const serviceId = state.id
+      if (serviceId) {
+        await apigw.remove({
+          created: state.created,
+          serviceId: serviceId,
+          environment: state.environment,
+          apiList: state.apis,
+          customDomains: state.customDomains
+        })
+      }
     }
+  } catch (e) {
+    console.log(`[REMOVE APIGW ERROR] ${e.message}`)
   }
   return {}
 }
@@ -288,25 +296,30 @@ async function deployStatic({ instance, credentials, inputs, code }) {
 }
 
 async function removeStatic({ instance, region, state }) {
-  const { __TmpCredentials } = instance
-  if (state) {
-    console.log(`Removing static config`)
-    // 1. remove cos
-    if (state.cos) {
-      const cos = new Cos(__TmpCredentials, region)
-      await cos.remove(state.cos)
-    }
-    // 2. remove cdn
-    if (state.cdn) {
-      const cdn = new Cdn(__TmpCredentials)
-      try {
-        await cdn.remove(state.cdn)
-      } catch (e) {
-        // no op
+  try {
+    const { __TmpCredentials } = instance
+    if (state) {
+      console.log(`Removing static config`)
+      // 1. remove cos
+      if (state.cos) {
+        const cos = new Cos(__TmpCredentials, region)
+        await cos.remove(state.cos)
       }
+      // 2. remove cdn
+      if (state.cdn) {
+        const cdn = new Cdn(__TmpCredentials)
+        try {
+          await cdn.remove(state.cdn)
+        } catch (e) {
+          // no op
+        }
+      }
+      console.log(`Remove static config success`)
     }
-    console.log(`Remove static config success`)
+  } catch (e) {
+    console.log(`[REMOVE STATIC ERROR] ${e.message}`)
   }
+  return {}
 }
 
 async function deployVpc({ instance, inputs, state = {} }) {
@@ -338,13 +351,17 @@ async function deployVpc({ instance, inputs, state = {} }) {
 }
 
 async function removeVpc({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  if (state.vpcId && state.subnetId) {
-    const vpc = new Vpc(__TmpCredentials, region)
-    await vpc.remove({
-      vpcId: state.vpcId,
-      subnetId: state.subnetId
-    })
+  try {
+    const { __TmpCredentials } = instance
+    if (state.vpcId && state.subnetId) {
+      const vpc = new Vpc(__TmpCredentials, region)
+      await vpc.remove({
+        vpcId: state.vpcId,
+        subnetId: state.subnetId
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE VPC ERROR] ${e.message}`)
   }
 
   return {}
@@ -389,13 +406,17 @@ async function deployDatabase({ instance, inputs, state = {} }) {
 }
 
 async function removeDatabase({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  if (state.clusterId) {
-    const cynosdb = new Cynosdb(__TmpCredentials, region)
+  try {
+    const { __TmpCredentials } = instance
+    if (state.clusterId) {
+      const cynosdb = new Cynosdb(__TmpCredentials, region)
 
-    await cynosdb.remove({
-      clusterId: state.clusterId
-    })
+      await cynosdb.remove({
+        clusterId: state.clusterId
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE DATABASE ERROR] ${e.message}`)
   }
 
   return {}
@@ -442,14 +463,18 @@ async function deployCfs({ instance, inputs, state = {} }) {
 }
 
 async function removeCfs({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  const cfs = new Cfs(__TmpCredentials, region)
+  try {
+    const { __TmpCredentials } = instance
+    const cfs = new Cfs(__TmpCredentials, region)
 
-  if (state.name && state.cfsId) {
-    await cfs.remove({
-      fsName: state.name,
-      fileSystemId: state.cfsId
-    })
+    if (state.name && state.cfsId) {
+      await cfs.remove({
+        fsName: state.name,
+        fileSystemId: state.cfsId
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE CFS ERROR] ${e.message}`)
   }
 
   return {}
@@ -482,14 +507,18 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
 }
 
 async function removeLayer({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  const layer = new Layer(__TmpCredentials, region)
+  try {
+    const { __TmpCredentials } = instance
+    const layer = new Layer(__TmpCredentials, region)
 
-  if (state.name && state.version) {
-    await layer.remove({
-      name: state.name,
-      version: state.version
-    })
+    if (state.name && state.version) {
+      await layer.remove({
+        name: state.name,
+        version: state.version
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE LAYER ERROR] ${e.message}`)
   }
 
   return {}
@@ -563,13 +592,17 @@ async function deployCdn({ instance, inputs, state = {}, origin }) {
 }
 
 async function removeCdn({ instance, region, state = {} }) {
-  const { __TmpCredentials } = instance
-  const cdn = new Cdn(__TmpCredentials, region)
+  try {
+    const { __TmpCredentials } = instance
+    const cdn = new Cdn(__TmpCredentials, region)
 
-  if (state.domain) {
-    await cdn.remove({
-      domain: state.domain
-    })
+    if (state.domain) {
+      await cdn.remove({
+        domain: state.domain
+      })
+    }
+  } catch (e) {
+    console.log(`[REMOVE CDN ERROR] ${e.message}`)
   }
 
   return {}

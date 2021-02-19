@@ -49,7 +49,7 @@ it('Using template should deploy success', async () => {
 
   // layer
   expect(outputs.layer).toBeDefined()
-  expect(outputs.layer.name).toBe('wp-layer')
+  expect(outputs.layer.name).toContain('wp-layer')
   expect(outputs.layer.version).toBeGreaterThanOrEqual(1)
   expect(outputs.layer.runtimes).toEqual([
     'CustomRuntime'
@@ -63,17 +63,17 @@ it('Using template should deploy success', async () => {
 
   // wpInitFaas
   expect(outputs.wpInitFaas).toBeDefined()
-  expect(outputs.wpInitFaas.name).toEqual('wp-init')
+  expect(outputs.wpInitFaas.name).toContain('wp-init')
   expect(outputs.wpInitFaas.runtime).toEqual('Nodejs12.16')
 
   // wpServerFaas
   expect(outputs.wpServerFaas).toBeDefined()
-  expect(outputs.wpServerFaas.name).toEqual('wp-server')
+  expect(outputs.wpServerFaas.name).toContain('wp-server')
   expect(outputs.wpServerFaas.runtime).toEqual('CustomRuntime')
   expect(outputs.wpServerFaas.layers).toEqual([
     {
-      name: 'wp-layer',
-      version: expect.any(Number)
+      name: outputs.layer.name,
+      version: outputs.layer.version
     }
   ])
 })
