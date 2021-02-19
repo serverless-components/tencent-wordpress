@@ -1,5 +1,5 @@
 {
-  "name": "@serverless/express",
+  "name": "@serverless/wordpress",
   "main": "src/serverless.js",
   "publishConfig": {
     "access": "public"
@@ -63,7 +63,7 @@
     "prettier": "^1.19.1",
     "semantic-release": "^17.0.4"
   },
-  "description": "Easily deploy serverless Express.js applications to Tencent Cloud with the Serverless Framework",
+  "description": "Easily deploy serverless wordpress applications to Tencent Cloud with the Serverless Framework",
   "directories": {
     "doc": "docs",
     "example": "example",
@@ -71,18 +71,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/serverless-components/tencent-express.git"
+    "url": "git+https://github.com/serverless-components/tencent-wordpress.git"
   },
   "keywords": [
-    "serverless-express",
+    "serverless-wordpress",
     "serverless",
-    "express",
+    "wordpress",
     "serverless-framework",
     "serverless-components",
     "tencent-cloud"
   ],
   "bugs": {
-    "url": "https://github.com/serverless-components/tencent-express/issues"
+    "url": "https://github.com/serverless-components/tencent-wordpress/issues"
   },
-  "homepage": "https://github.com/serverless-components/tencent-express#readme"
+  "homepage": "https://github.com/serverless-components/tencent-wordpress#readme"
 }
