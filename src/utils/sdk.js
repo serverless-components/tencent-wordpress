@@ -15,7 +15,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
 
   const scf = new Scf(__TmpCredentials, region)
   const inputFaas = inputs.faas || {}
-  const DEFAULT_CONFIGS = CONFIGS.faas
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.faas)
 
   const { bucket, object } = await uploadCodeToCos({ instance, region, code })
   const appId = instance.getAppId()
@@ -139,7 +139,7 @@ async function deployApigw({ instance, inputs, state = {} }) {
   const { __TmpCredentials, CONFIGS } = instance
   const region = inputs.region || CONFIGS.region
   const inputApigw = inputs.apigw || {}
-  const DEFAULT_CONFIGS = CONFIGS.apigw
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.apigw)
 
   function formatOutputs(outputs) {
     const result = {
@@ -328,7 +328,7 @@ async function deployVpc({ instance, inputs, state = {} }) {
   const zone = inputs.zone || CONFIGS.zone
 
   const inputVpc = inputs.vpc || {}
-  const DEFAULT_CONFIGS = CONFIGS.vpc
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.vpc)
 
   // create vpc
   const vpc = new Vpc(__TmpCredentials, region)
@@ -374,7 +374,7 @@ async function deployDatabase({ instance, inputs, state = {} }) {
 
   const cynosdb = new Cynosdb(__TmpCredentials, region)
   const inputDb = inputs.db || {}
-  const DEFAULT_CONFIGS = CONFIGS.db
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.db)
 
   function formatOutputs(outputs) {
     if (state.adminPassword && !outputs.adminPassword) {
@@ -429,7 +429,7 @@ async function deployCfs({ instance, inputs, state = {} }) {
 
   const cfs = new Cfs(__TmpCredentials, region)
   const inputCfs = inputs.cfs || {}
-  const DEFAULT_CONFIGS = CONFIGS.cfs
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.cfs)
 
   function formatOutputs(outputs) {
     outputs.name = outputs.fsName
@@ -487,7 +487,7 @@ async function deployLayer({ instance, inputs, code, state = {} }) {
   const layer = new Layer(__TmpCredentials, region)
   const inputLayer = inputs.layer || {}
 
-  const DEFAULT_CONFIGS = CONFIGS.layer
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.layer)
   const { bucket, object } = await uploadCodeToCos({ instance, region, code })
   const appId = instance.getAppId()
 
