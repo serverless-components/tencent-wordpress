@@ -1,7 +1,7 @@
 const { Component } = require('@serverless/core')
 const { ApiTypeError, ApiError } = require('tencent-component-toolkit/lib/utils/error')
 const { sleep } = require('@ygkit/request')
-const { generateId, getCodeZipPath, uploadCodeToCos } = require('./utils')
+const { deepClone, generateId, getCodeZipPath, uploadCodeToCos } = require('./utils')
 const {
   invokeFaas,
   deployFaas,
@@ -44,7 +44,7 @@ class ServerlessComponent extends Component {
   }
 
   initialize() {
-    this.CONFIGS = DEFAULT_CONFIGS
+    this.CONFIGS = deepClone(DEFAULT_CONFIGS)
     this.framework = 'wordpress'
     this.__TmpCredentials = this.getCredentials()
   }
