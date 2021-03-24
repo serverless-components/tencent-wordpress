@@ -119,10 +119,10 @@ const CONFIGS = {
     instanceCount: 1,
     payMode: 0,
     dbMode: 'SERVERLESS',
-    minCpu: 0.5,
-    maxCpu: 2,
+    minCpu: 0.25,
+    maxCpu: 0.5,
     autoPause: 'yes',
-    autoPauseDelay: 3600 // default 1h
+    autoPauseDelay: 600 // default 1h
   },
 
   // COS 桶配置
