@@ -1,3 +1,10 @@
+## [0.0.6](https://github.com/serverless-components/tencent-wordpress/compare/v0.0.5...v0.0.6) (2021-03-25)
+
+
+### Bug Fixes
+
+* update db config to lowest config ([fb2a5a5](https://github.com/serverless-components/tencent-wordpress/commit/fb2a5a5994b1a614bc23d23c44e96a99260252b7))
+
 ## [0.0.5](https://github.com/serverless-components/tencent-wordpress/compare/v0.0.4...v0.0.5) (2021-02-25)
 
 
