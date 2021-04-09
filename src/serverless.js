@@ -9,6 +9,7 @@ const {
   deployApigw,
   removeApigw,
   deployVpc,
+  deployByDefaultVpc,
   removeVpc,
   deployCfs,
   removeCfs,
@@ -67,15 +68,17 @@ class ServerlessComponent extends Component {
     console.log(`Deploying ${framework} Application (${uuid})`)
 
     // 1. 部署VPC
+    let deployVpcHandler = deployByDefaultVpc
     if (inputs.vpc) {
       inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}`
       inputs.vpc.subnetName = `${CONFIGS.vpc.subnetName}-${uuid}`
+      deployVpcHandler = deployVpc
     } else {
       inputs.vpc = {}
       inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}-${uuid}`
       inputs.vpc.subnetName = `${CONFIGS.vpc.subnetName}-${uuid}`
     }
-    const vpcOutput = await deployVpc({
+    const vpcOutput = await deployVpcHandler({
       instance: this,
       inputs,
       state: this.state.vpc
@@ -85,6 +88,8 @@ class ServerlessComponent extends Component {
       vpcId: vpcOutput.vpcId,
       subnetId: vpcOutput.subnetId
     }
+
+    inputs.zone = vpcOutput.zone
 
     this.state.vpc = vpcOutput
 
@@ -418,7 +423,10 @@ class ServerlessComponent extends Component {
     // 由于以上资源均依赖 VPC，所以需要最后删除
     // 以上资源删除结束等待3s，以防后端异步逻辑未同步
     await sleep(3000)
-    await removeVpc({ instance: this, region, state: state.vpc })
+    // 只有非默认 vpc 才执行删除
+    if (this.state.vpc && !this.state.vpc.isDefault) {
+      await removeVpc({ instance: this, region, state: state.vpc })
+    }
 
     if (state.cdn) {
       await removeCdn({ instance: this, region, state: state.cdn })
