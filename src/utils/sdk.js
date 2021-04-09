@@ -1,4 +1,6 @@
 const { Scf, Apigw, Cos, Cdn, Vpc, Cynosdb, Cfs, Layer } = require('tencent-component-toolkit')
+const VpcUtils = require('tencent-component-toolkit/lib/modules/vpc/utils').default
+const { getServerlessSupportZones } = require('tencent-component-toolkit/lib/modules/cynosdb/utils')
 const {
   removeAppid,
   uploadCodeToCos,
@@ -350,6 +352,41 @@ async function deployVpc({ instance, inputs, state = {} }) {
   return vpcOutput
 }
 
+async function deployByDefaultVpc({ instance, inputs, state = {} }) {
+  const { __TmpCredentials, CONFIGS } = instance
+  const region = inputs.region || CONFIGS.region
+
+  const cynosdb = new Cynosdb(__TmpCredentials)
+  const supportZones = await getServerlessSupportZones(cynosdb.capi)
+
+  const [currentZone] = supportZones.filter((item) => {
+    return item.Region === region
+  })
+
+  // 尝试创建默认 VPC
+  const vpc = new Vpc(__TmpCredentials, region)
+  const defaultVpc = await VpcUtils.createDefaultVpc(vpc.capi, currentZone.Zone)
+
+  const isDhcp = await VpcUtils.isDhcpEnable(vpc.capi, defaultVpc.VpcId)
+  if (isDhcp) {
+    console.log(`Use default VPC, vpcId: ${defaultVpc.VpcId}, subnetId: ${defaultVpc.SubnetId}`)
+    const vpcOutput = {
+      region,
+      zone: currentZone.Zone,
+      vpcId: defaultVpc.VpcId,
+      subnetId: defaultVpc.SubnetId,
+      vpcName: defaultVpc.VpcName,
+      subnetName: defaultVpc.SubnetName
+    }
+    vpcOutput.isDefault = true
+
+    return vpcOutput
+  }
+
+  // 如果不支持 DHCP，则新建
+  return deployVpc({ instance, inputs, state })
+}
+
 async function removeVpc({ instance, region, state = {} }) {
   try {
     const { __TmpCredentials } = instance
@@ -617,6 +654,7 @@ module.exports = {
   deployStatic,
   removeStatic,
   deployVpc,
+  deployByDefaultVpc,
   removeVpc,
   deployDatabase,
   removeDatabase,

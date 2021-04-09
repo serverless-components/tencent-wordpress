@@ -132,7 +132,7 @@ const uploadCodeToCos = async ({ instance, code, region }) => {
     object: bucketKey,
     method: 'PUT'
   })
-  console.log(`Uploading code to bucket ${bucket}`)
+  console.log(`Uploading code to bucket ${cosBucketName}`)
   // 是否需要注入垫片代码
   if (injectShim) {
     const { injectFiles, injectDirs } = getInjection(instance)
@@ -141,7 +141,7 @@ const uploadCodeToCos = async ({ instance, code, region }) => {
     await instance.uploadSourceZipToCOS(zipPath, uploadUrl, {}, {})
   }
 
-  console.log(`Upload ${bucketKey} to bucket ${bucket} success`)
+  console.log(`Upload ${bucketKey} to bucket ${cosBucketName} success`)
 
   return {
     bucket: cosBucketName,
