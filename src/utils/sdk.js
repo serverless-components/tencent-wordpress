@@ -11,6 +11,8 @@ const {
   initializeStaticinputCdn
 } = require('./index')
 
+const { getAvailableCidr } = require('./vpc')
+
 async function deployFaas({ instance, inputs, code, state = {} }) {
   const { __TmpCredentials, CONFIGS } = instance
   const region = inputs.region || CONFIGS.region
@@ -352,6 +354,90 @@ async function deployVpc({ instance, inputs, state = {} }) {
   return vpcOutput
 }
 
+async function getDefaultVpcAndSubnet({ instance, inputs, region, zone, state }) {
+  const { __TmpCredentials, CONFIGS } = instance
+
+  const inputVpc = inputs.vpc || {}
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.vpc)
+
+  const { capi } = new Vpc(__TmpCredentials, region)
+
+  // state 中有 vpcId，则查询详情
+  // 如果详情存在则视为存在，如果不存在则尝试创建默认 VPC
+  let existVpc = false
+  let defaultVpc = null
+  if (state.vpcId) {
+    defaultVpc = await VpcUtils.getVpcDetail(capi, state.vpcId)
+    if (defaultVpc) {
+      existVpc = true
+    }
+  }
+  if (!existVpc) {
+    defaultVpc = await VpcUtils.getDefaultVpc(capi)
+    if (!defaultVpc) {
+      console.log(`Creating default vpc`)
+      defaultVpc = await VpcUtils.createDefaultVpc(capi, zone)
+      return {
+        vpcId: defaultVpc.VpcId,
+        vpcName: defaultVpc.VpcName,
+        subnetId: defaultVpc.SubnetId,
+        subnetName: defaultVpc.SubnetName
+      }
+    }
+  }
+
+  // 如果默认 VPC 不支持 DHCP，直接返回
+  const isDhcp = await VpcUtils.isDhcpEnable(capi, defaultVpc.VpcId)
+  if (!isDhcp) {
+    return null
+  }
+
+  // state 中有 subnetId，则查询详情，如果详情存在则视为存在
+  // 如果不存在则查询默认子网，如果不存在符合条件的默认子网再尝试创建子网
+  let existSubnet = false
+  let defaultSubnet = null
+  if (state.subnetId) {
+    defaultSubnet = await VpcUtils.getSubnetDetail(capi, state.subnetId)
+    if (defaultSubnet) {
+      existSubnet = true
+    }
+  }
+  if (!existSubnet) {
+    defaultSubnet = await VpcUtils.getDefaultSubnet(capi, defaultVpc.VpcId)
+
+    // 不存在支持 db 的子网，则自动创建
+    if (!defaultSubnet || zone !== defaultSubnet.Zone) {
+      // 获取当前 VPC 下子网列表
+      const subnetList = await VpcUtils.getSubnetList(capi, defaultVpc.VpcId)
+      const subnetCidrList = subnetList.map((item) => item.CidrBlock)
+      const cidrBlock = getAvailableCidr(defaultVpc.CidrBlock, subnetCidrList)
+
+      const subnetName = inputVpc.subnetName || DEFAULT_CONFIGS.subnetName
+      console.log(`Creating subnet ${subnetName}`)
+      const { SubnetId } = await VpcUtils.createSubnet(capi, {
+        VpcId: defaultVpc.VpcId,
+        Zone: zone,
+        SubnetName: subnetName,
+        CidrBlock: cidrBlock
+      })
+      console.log(`Create subnet ${subnetName} (${SubnetId}) success`)
+      return {
+        vpcId: defaultVpc.VpcId,
+        vpcName: defaultVpc.VpcName,
+        subnetId: SubnetId,
+        subnetName: subnetName
+      }
+    }
+  }
+
+  return {
+    vpcId: defaultVpc.VpcId,
+    vpcName: defaultVpc.VpcName,
+    subnetId: defaultSubnet.SubnetId,
+    subnetName: defaultSubnet.SubnetName
+  }
+}
+
 async function deployByDefaultVpc({ instance, inputs, state = {} }) {
   const { __TmpCredentials, CONFIGS } = instance
   const region = inputs.region || CONFIGS.region
@@ -363,20 +449,23 @@ async function deployByDefaultVpc({ instance, inputs, state = {} }) {
     return item.Region === region
   })
 
-  // 尝试创建默认 VPC
-  const vpc = new Vpc(__TmpCredentials, region)
-  const defaultVpc = await VpcUtils.createDefaultVpc(vpc.capi, currentZone.Zone)
+  const defaultVpc = await getDefaultVpcAndSubnet({
+    instance,
+    inputs,
+    region,
+    zone: currentZone.Zone,
+    state
+  })
 
-  const isDhcp = await VpcUtils.isDhcpEnable(vpc.capi, defaultVpc.VpcId)
-  if (isDhcp) {
-    console.log(`Use default VPC, vpcId: ${defaultVpc.VpcId}, subnetId: ${defaultVpc.SubnetId}`)
+  if (defaultVpc) {
+    console.log(`Use default VPC, vpcId: ${defaultVpc.vpcId}, subnetId: ${defaultVpc.subnetId}`)
     const vpcOutput = {
       region,
       zone: currentZone.Zone,
-      vpcId: defaultVpc.VpcId,
-      subnetId: defaultVpc.SubnetId,
-      vpcName: defaultVpc.VpcName,
-      subnetName: defaultVpc.SubnetName
+      vpcId: defaultVpc.vpcId,
+      vpcName: defaultVpc.vpcName,
+      subnetId: defaultVpc.subnetId,
+      subnetName: defaultVpc.subnetName
     }
     vpcOutput.isDefault = true
 
