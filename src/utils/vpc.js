@@ -1,3 +1,5 @@
+const { ApiTypeError } = require('tencent-component-toolkit/lib/utils/error')
+
 /**
  * 自然数级别的区间计算库；也可用于字符串区间（直接使用字符串对比），但此时不支持区间减法。
  * nature number ranges calculate library, also support string ranges without subtraction.
@@ -232,8 +234,10 @@ function getAvailableCidr(
   })
 
   const [avalableZone] = totalRang.ranges
-
-  return `${uintToIp(avalableZone[0])}/29`
+  if (avalableZone) {
+    return `${uintToIp(avalableZone[0])}/29`
+  }
+  throw new ApiTypeError(`GET_AVAILABLE_CIDR`, `Can not get available CIDR for VPC ${vpcCIDR}.`)
 }
 
 module.exports = {
