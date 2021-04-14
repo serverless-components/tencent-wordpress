@@ -1,3 +1,17 @@
+# [0.1.0](https://github.com/serverless-components/tencent-wordpress/compare/v0.0.6...v0.1.0) (2021-04-14)
+
+
+### Bug Fixes
+
+* add can not get CIDR error ([5d555d3](https://github.com/serverless-components/tencent-wordpress/commit/5d555d36f4977346a1435ac14a26a956aa462287))
+* increase upload size to 4M ([44060f6](https://github.com/serverless-components/tencent-wordpress/commit/44060f632a8082c0ee8c547e56f9d493989fcd9f))
+* support auto provide cidr for subnet ([2d9661a](https://github.com/serverless-components/tencent-wordpress/commit/2d9661ad5303f24bd7e00be8b03f8b9e52d37f00))
+
+
+### Features
+
+* support using default vpc ([a474359](https://github.com/serverless-components/tencent-wordpress/commit/a474359fdf307cb77d17e20ca456de87f877da61))
+
 ## [0.0.6](https://github.com/serverless-components/tencent-wordpress/compare/v0.0.5...v0.0.6) (2021-03-25)
 
 
