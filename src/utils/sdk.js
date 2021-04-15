@@ -405,8 +405,17 @@ async function getDefaultVpcAndSubnet({ instance, inputs, region, zone, state })
   if (!existSubnet) {
     defaultSubnet = await VpcUtils.getDefaultSubnet(capi, defaultVpc.VpcId)
 
-    // 不存在支持 db 的子网，则自动创建
-    if (!defaultSubnet || zone !== defaultSubnet.Zone) {
+    if (!defaultSubnet) {
+      console.log(`Creating default subnet for vpc`)
+      defaultVpc = await VpcUtils.createDefaultVpc(capi, zone)
+      return {
+        vpcId: defaultVpc.VpcId,
+        vpcName: defaultVpc.VpcName,
+        subnetId: defaultVpc.SubnetId,
+        subnetName: defaultVpc.SubnetName
+      }
+    } else if (zone !== defaultSubnet.Zone) {
+      // 不存在支持 db 的子网，则自动创建
       // 获取当前 VPC 下子网列表
       const subnetList = await VpcUtils.getSubnetList(capi, defaultVpc.VpcId)
       const subnetCidrList = subnetList.map((item) => item.CidrBlock)
