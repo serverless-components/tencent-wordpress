@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/serverless-components/tencent-wordpress/compare/v0.1.0...v0.1.1) (2021-04-15)
+
+
+### Bug Fixes
+
+* optimize default subnet create ([f031eba](https://github.com/serverless-components/tencent-wordpress/commit/f031eba0205bdcd606672ba173051acb8ca256a1))
+
 # [0.1.0](https://github.com/serverless-components/tencent-wordpress/compare/v0.0.6...v0.1.0) (2021-04-14)
 
 
