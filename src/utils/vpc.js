@@ -235,16 +235,7 @@ function getAvailableCidr(
 
   const [avalableZone] = totalRang.ranges
   if (avalableZone) {
-    const zoneDiff = avalableZone[1] - avalableZone[0]
-    if (zoneDiff < 5) {
-      throw new ApiTypeError(`GET_AVAILABLE_CIDR`, `Can not get available CIDR for VPC ${vpcCIDR}.`)
-    }
-    let mask = 29
-    console.log('zone diff: ', zoneDiff)
-    if (zoneDiff >= 13) {
-      mask = 28
-    }
-    return `${uintToIp(avalableZone[0])}/${mask}`
+    return `${uintToIp(avalableZone[0])}/${28}`
   }
   throw new ApiTypeError(`GET_AVAILABLE_CIDR`, `Can not get available CIDR for VPC ${vpcCIDR}.`)
 }
