@@ -15,7 +15,9 @@
 - [**架构说明**](#架构说明)
 - [**账号配置**](#账号配置)
 
-&nbsp;
+### 架构
+
+<img src="./docs/architecture.jpg" alt="Serverless Wordpress 架构" width="800">
 
 ### 1. 安装
 
