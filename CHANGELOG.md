@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/serverless-components/tencent-wordpress/compare/v0.1.1...v0.2.0) (2021-04-27)
+
+
+### Features
+
+* support tag config ([c9765be](https://github.com/serverless-components/tencent-wordpress/commit/c9765be56162410a77d4f76df42f2f16b162bbc1))
+
 ## [0.1.1](https://github.com/serverless-components/tencent-wordpress/compare/v0.1.0...v0.1.1) (2021-04-15)
 
 
