@@ -19,6 +19,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
 
   const scf = new Scf(__TmpCredentials, region)
   const inputFaas = inputs.faas || {}
+  const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.faas)
 
   const { bucket, object } = await uploadCodeToCos({ instance, region, code })
@@ -67,11 +68,16 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     })
   }
 
+  const scfTags = {}
+  tags.forEach((item) => {
+    scfTags[item.key] = item.value
+  })
+  sdkInput.tags = scfTags
+
   // 配置标签
   if (inputFaas.tags) {
-    const tags = deepClone(inputFaas.tags)
     sdkInput.tags = {}
-    tags.forEach((item) => {
+    deepClone(inputFaas.tags).forEach((item) => {
       sdkInput.tags[item.key] = item.value
     })
   }
@@ -143,6 +149,7 @@ async function deployApigw({ instance, inputs, state = {} }) {
   const { __TmpCredentials, CONFIGS } = instance
   const region = inputs.region || CONFIGS.region
   const inputApigw = inputs.apigw || {}
+  const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.apigw)
 
   function formatOutputs(outputs) {
@@ -203,7 +210,8 @@ async function deployApigw({ instance, inputs, state = {} }) {
       created: state.created,
       apiList: state.apis || [],
       customDomains: state.customDomains || []
-    }
+    },
+    tags
   })
 
   const apigwOutput = await apigw.deploy(deepClone(sdkInput))
@@ -332,6 +340,7 @@ async function deployVpc({ instance, inputs, state = {} }) {
   const zone = inputs.zone || CONFIGS.zone
 
   const inputVpc = inputs.vpc || {}
+  const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.vpc)
 
   // create vpc
@@ -347,7 +356,8 @@ async function deployVpc({ instance, inputs, state = {} }) {
     subnetId: inputVpc.subnetId || state.subnetId,
     // 支持用户配置
     vpcName: inputVpc.vpcName || DEFAULT_CONFIGS.vpcName,
-    subnetName: inputVpc.subnetName || DEFAULT_CONFIGS.subnetName
+    subnetName: inputVpc.subnetName || DEFAULT_CONFIGS.subnetName,
+    tags
   })
   const vpcOutput = await vpc.deploy(sdkInput)
 
@@ -509,6 +519,7 @@ async function deployDatabase({ instance, inputs, state = {} }) {
 
   const cynosdb = new Cynosdb(__TmpCredentials, region)
   const inputDb = inputs.db || {}
+  const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.db)
 
   function formatOutputs(outputs) {
@@ -532,7 +543,8 @@ async function deployDatabase({ instance, inputs, state = {} }) {
     // 支持用户配置
     enablePublicAccess: inputDb.enablePublicAccess === true,
     dbMode: inputDb.dbMode || 'SERVERLESS',
-    payMode: inputDb.payMode === 1 ? 1 : 0
+    payMode: inputDb.payMode === 1 ? 1 : 0,
+    tags
   })
 
   const outputs = await cynosdb.deploy(sdkInput)
@@ -564,6 +576,7 @@ async function deployCfs({ instance, inputs, state = {} }) {
 
   const cfs = new Cfs(__TmpCredentials, region)
   const inputCfs = inputs.cfs || {}
+  const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.cfs)
 
   function formatOutputs(outputs) {
@@ -590,7 +603,8 @@ async function deployCfs({ instance, inputs, state = {} }) {
 
       // 支持用户配置
       fsName: inputCfs.fsName || DEFAULT_CONFIGS.name,
-      pGroupId: inputCfs.pGroupId || DEFAULT_CONFIGS.pGroupId
+      pGroupId: inputCfs.pGroupId || DEFAULT_CONFIGS.pGroupId,
+      tags
     })
   )
 
@@ -663,6 +677,7 @@ async function deployCdn({ instance, inputs, state = {}, origin }) {
   const { __TmpCredentials, CONFIGS, framework } = instance
   const cdn = new Cdn(__TmpCredentials)
   const inputCdn = inputs.cdn || {}
+  const tags = inputs.tags || []
 
   const sdkInputs = {
     async: inputCdn.async === true,
@@ -697,7 +712,8 @@ async function deployCdn({ instance, inputs, state = {}, origin }) {
         ignoreSetCookie: 'off',
         compareMaxAge: 'off'
       }
-    }
+    },
+    tags
   }
 
   if (inputCdn.https) {

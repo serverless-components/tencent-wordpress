@@ -20,6 +20,9 @@ inputs:
     src: ./ # 本地需要打包的文件目录
     exclude: # 被排除的文件或目录
       - .env
+  tags: # 标签配置
+    - key: slstest
+      value: slstest
   faas: # 函数配置相关
     memorySize: 1024 # 内存大小，单位MB
   apigw: #  api网关配置
@@ -56,6 +59,7 @@ inputs:
 | src      |  否  |   [Src](#Src) 或者 string   |                 | wordpress 代码目录，如果不指定，会自动基于云端模板代码部署 |
 | region   |  否  |                             |  `ap-shanghai`  | 项目部署所在区域                                           |
 | zone     |  否  |                             | `ap-shanghai-2` | 分区                                                       |
+| tags     |  否  |        [Tag](#Tag)[]        |                 | 标签配置                                                   |
 | faas     |  否  |  [FaasConfig](#FaasConfig)  |                 | 函数配置                                                   |
 | apigw    |  否  | [ApigwConfig](#ApigwConfig) |                 | API 网关配置                                               |
 | vpc      |  否  |         [Vpc](#Vpc)         |                 | 私有网络配置                                               |
@@ -83,6 +87,15 @@ inputs:
 exclude:
   - 'node_modules/**'
 ```
+
+### Tag
+
+标签配置
+
+| 参数名称 | 必选 |  类型  | 默认值 | 描述   |
+| -------- | :--: | :----: | :----: | :----- |
+| key      |  是  | string |        | 标签键 |
+| value    |  是  | string |        | 标签值 |
 
 ### FaasConfig
 
