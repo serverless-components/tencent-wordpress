@@ -8,3 +8,6 @@ inputs:
   #   src: ./wordpress
   #   exclude:
   #     - .env
+  # tags:
+  #   - key: slstest
+  #     value: slstest
