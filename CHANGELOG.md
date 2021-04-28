@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/serverless-components/tencent-wordpress/compare/v0.2.0...v0.2.1) (2021-04-28)
+
+
+### Bug Fixes
+
+* config apigw id bug ([754c5fc](https://github.com/serverless-components/tencent-wordpress/commit/754c5fc1026443e1397366d42714b4eeb98af523))
+
 # [0.2.0](https://github.com/serverless-components/tencent-wordpress/compare/v0.1.1...v0.2.0) (2021-04-27)
 
 
