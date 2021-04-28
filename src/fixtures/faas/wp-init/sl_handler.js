@@ -51,6 +51,7 @@ async function handler(event, context) {
 
   const syncDBStatus = await syncDatabase()
   if (!syncDBStatus) {
+    response.reason = '[Serverless DB Error]: Intialize failed.'
     return response
   }
 

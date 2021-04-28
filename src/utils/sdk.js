@@ -137,7 +137,10 @@ async function invokeFaas({ instance, inputs, name, namespace, parameters }) {
   try {
     return JSON.parse(Result.RetMsg)
   } catch (e) {
-    return {}
+    return {
+      status: false,
+      reason: e.message
+    }
   }
 }
 
@@ -171,12 +174,13 @@ async function deployApigw({ instance, inputs, state = {} }) {
   }
 
   const apigw = new Apigw(__TmpCredentials, region)
-
+  const serviceId = inputApigw.id || (state && state.id)
   const sdkInput = Object.assign(inputApigw, {
     isDisabled: inputApigw.isDisabled === true,
     protocols: inputApigw.protocols || DEFAULT_CONFIGS.protocols,
     environment: inputApigw.environment || DEFAULT_CONFIGS.environment,
-    serviceId: inputApigw.id || (state && state.id),
+    serviceId: serviceId,
+    isInputServiceId: !!serviceId,
     serviceName: inputApigw.name || DEFAULT_CONFIGS.name,
     serviceDesc: inputApigw.description || CONFIGS.description,
     endpoints: [

@@ -334,7 +334,7 @@ class ServerlessComponent extends Component {
 
     // 8. 创建 API 网关
     if (inputs.apigw) {
-      inputs.apigw.name = `${CONFIGS.apigw.name}-${uuid}`
+      inputs.apigw.name = `${CONFIGS.apigw.name}_${uuid}`
       inputs.apigw.faas = {
         name: wpServerOutput.name,
         namespace: wpServerOutput.namespace
