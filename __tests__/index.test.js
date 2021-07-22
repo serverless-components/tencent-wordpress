@@ -27,6 +27,7 @@ it('Using template should deploy success', async () => {
   const { outputs } = instance
   expect(instance.instanceName).toEqual(instanceYaml.name)
 
+  console.log(outputs)
   // vpc
   expect(outputs.vpc).toBeDefined()
   expect(outputs.vpc.region).toBe('ap-shanghai')
@@ -52,7 +53,7 @@ it('Using template should deploy success', async () => {
   expect(outputs.layer.name).toContain('wp-layer')
   expect(outputs.layer.version).toBeGreaterThanOrEqual(1)
   expect(outputs.layer.runtimes).toEqual([
-    'CustomRuntime'
+    'Php7'
   ])
 
 
