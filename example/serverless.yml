@@ -4,10 +4,21 @@ component: wordpress
 name: wordpress-demo
 
 inputs:
-  # src:
-  #   src: ./wordpress
-  #   exclude:
-  #     - .env
-  # tags:
-  #   - key: slstest
-  #     value: slstest
+# src:
+#   src: ./wordpress
+#   exclude:
+#     - .env
+# tags:
+#   - key: slstest
+#     value: slstest
+# vpc:
+#   vpcId: vpc-xxxx
+#   subnetId: subnet-xxxx
+# db:
+#   netMode: local
+#   host: xx.xx.xx.xx
+#   dataBaseName: xxxx
+#   user: root
+#   port: 3306
+#   password: xxxx
+

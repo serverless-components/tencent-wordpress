@@ -1,5 +1,5 @@
 name: wordpress
-version: 0.2.1
+version: 0.2.2
 author: Tencent Cloud, Inc.
 org: Tencent Cloud, Inc.
 description: Deploy a serverless wordpress.js application on Tencent SCF and API Gateway.
@@ -80,6 +80,28 @@ actions:
         type: object
         keys:
           clusterId:
+            type: string
+          netMode:
+            required: true
+            type: string
+            allow:
+              - 'net'
+              - 'local'
+          host:
+            required: true
+            type: string
+          port:
+            min: 1024
+            max: 65535
+            type: number
+          dataBaseName:
+            required: true
+            type: string
+          user:
+            required: true
+            type: string
+          password:
+            required: true
             type: string
       cdn:
         type: object

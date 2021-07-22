@@ -44,8 +44,12 @@ inputs:
   cfs:
     cfsId: cls-xxx
   db:
-    clusterId: cluster-xxx
-    dbMode: SERVERLESS
+    netMode: local
+    host: xx.xx.xx.xx
+    dataBaseName: xxxx
+    user: root
+    port: 3306
+    password: xxxx
 ```
 
 > 注意：`vpc`、`cfs`、`db` 三个配置的支持，是为了方便用户复用自己已有的云端资源，通常可以不用配置。`faas` 和 `apigw` 两个参数通常也可以不用配置，如果需要指定特定相关参数，比如函数的内存大小，API 网关自定义域名等，可以自定义配置。
@@ -157,12 +161,16 @@ CFS - 文件存储配置
 
 ### Db
 
-TDSQL-C serverless 版本配置，如果要复用已有的数据库，可以到 https://console.cloud.tencent.com/cynosdb 查看已经存在的 Serverless TDSQL-C 数据库的集群 ID
+使用自建数据库
 
-| 参数名称  | 类型   | 描述                                                                                      |
-| --------- | ------ | :---------------------------------------------------------------------------------------- |
-| clusterId | string | 集群 ID                                                                                   |
-| dbMode    | string | 数据库类型，默认为 `SERVERLESS` 类型，如果想创建正常的按量计费数据库，可以配置为 `NORMAL` |
+| 参数名称     | 类型   | 描述                                                                                                                    |
+| ------------ | ------ | :---------------------------------------------------------------------------------------------------------------------- |
+| netMode      | string | 数据库网络类，当值为 `local` 表示使用腾讯云 cdb 数据库，数据库必须和部署地域一致，当值为 `net` 表示使用位于公网的数据库 |  |
+| host         | string | 数据库地址                                                                                                              |
+| dataBaseName | string | 数据库名称，不必预先创建                                                                                                |
+| user         | string | 数据库用户名                                                                                                            |
+| password     | string | 数据库密码                                                                                                              |
+| port         | string | 数据库端口                                                                                                              |
 
 <!-- links -->
 

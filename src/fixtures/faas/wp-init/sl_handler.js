@@ -25,12 +25,13 @@ async function handler(event, context) {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         host: process.env.DB_HOST,
-        port: 3306
+        port: process.env.DB_PORT
       })
       await db.query(`CREATE DATABASE IF NOT EXISTS ${dbname}`)
       console.log(`Initialize database ${dbname} success`)
       return true
     } catch (e) {
+      console.log(`${e}`, e.message)
       if (
         e.message.indexOf(
           'CynosDB serverless instance is resuming, please try connecting again'

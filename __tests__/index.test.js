@@ -69,7 +69,7 @@ it('Using template should deploy success', async () => {
   // wpServerFaas
   expect(outputs.wpServerFaas).toBeDefined()
   expect(outputs.wpServerFaas.name).toContain('wp-server')
-  expect(outputs.wpServerFaas.runtime).toEqual('CustomRuntime')
+  expect(outputs.wpServerFaas.runtime).toEqual('Php7')
   expect(outputs.wpServerFaas.layers).toEqual([
     {
       name: outputs.layer.name,

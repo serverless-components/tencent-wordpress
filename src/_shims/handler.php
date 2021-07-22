@@ -1,9 +1,34 @@
 <?php
-
 // A special handler.
 
 // All requests through API Gateway are HTTPS.
 $_SERVER['HTTPS'] = 'on';
+
+function active_mysql_connect()
+{
+    $connect_db_retry_num = 0;
+    $conn = new mysqli();
+    // 尝试最多200次连接，每次间隔100ms，这里仅针对db处于暂定状态下重试，其他情况有wordpress本身去处理。
+    while ($connect_db_retry_num <= 200) {
+        $conn->connect(getenv("DB_HOST"), getenv("DB_USER"), getenv("DB_PASSWORD"));
+        if ($conn->connect_error == "CynosDB serverless instance is resuming, please try connecting again") {
+            $connect_db_retry_num += 1;
+            usleep(100000);
+            continue;
+        } else {
+            break;
+        }
+    }
+    return $connect_db_retry_num;
+}
+
+// 尝试去激活serverless db
+$db_mode = "";
+$db_mode = getenv("DB_MODE");
+if ($db_mode == "SERVERLESS") {
+  active_mysql_connect();
+}
+
 
 $extension_map = array(
     "css" => "text/css",

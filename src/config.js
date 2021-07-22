@@ -12,8 +12,11 @@ const CONFIGS = {
 
   shimPath: path.join(__dirname, '_shims'),
 
+  // templateUrl:
+  //   'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo.zip',
+
   templateUrl:
-    'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo.zip',
+    'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo-test.zip',
 
   bucket: 'wordpress-serverless-code',
 
@@ -59,27 +62,27 @@ const CONFIGS = {
   layer: {
     zipPath: join('fixtures/layer/wp-layer.zip'),
     name: 'wp-layer',
-    runtimes: ['CustomRuntime']
+    runtimes: ['Php7']
   },
 
   // wp-init 函数配置
   wpInitFaas: {
     zipPath: join('fixtures/faas/wp-init.zip'),
     name: 'wp-init',
+    type: 'Event',
     runtime: 'Nodejs12.16',
     handler: 'sl_handler.handler',
     cfsMountDir: '/mnt',
-    timeout: 120
+    timeout: 120,
+    initTimeout: 3
   },
 
   // wp-server 函数配置
   wpServerFaas: {
     zipPath: join('fixtures/faas/wp-server.zip'),
     name: 'wp-server',
-    runtime: 'CustomRuntime',
-    handler: 'sl_handler.php',
-    appHandler: 'handler.php',
-    initTimeout: 30,
+    type: 'web',
+    runtime: 'Php7',
     cfsMountDir: '/mnt',
     wpCodeDir: '/mnt/wordpress',
     memorySize: 1024,
@@ -88,9 +91,7 @@ const CONFIGS = {
 
   // 函数公共配置
   faas: {
-    handler: 'sl_handler.handler',
     timeout: 10,
-    initTimeout: 3,
     memorySize: 128,
     namespace: 'default',
     runtime: 'Php7'

@@ -44,6 +44,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     vpcConfig: inputs.vpc,
 
     // 函数特定配置
+    type: inputFaas.type,
     runtime: inputFaas.runtime || DEFAULT_CONFIGS.runtime,
     handler: inputFaas.handler || DEFAULT_CONFIGS.handler,
 
@@ -100,6 +101,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     return result
   }
 
+  console.log(`.....Create WP function ${sdkInput.handler} , ${sdkInput.type}`)
   const outputs = await scf.deploy(deepClone(sdkInput))
 
   return formatOutputs(outputs)
@@ -197,7 +199,8 @@ async function deployApigw({ instance, inputs, state = {} }) {
 
           // 从部署的 wp-server 函数获取信息
           functionName: inputApigw.faas.name,
-          functionNamespace: inputApigw.faas.namespace
+          functionNamespace: inputApigw.faas.namespace,
+          functionType: inputApigw.faas.functionType === 'web' ? 'HTTP' : 'EVENT'
         }
       }
     ],
@@ -557,6 +560,11 @@ async function deployDatabase({ instance, inputs, state = {} }) {
 }
 
 async function removeDatabase({ instance, region, state = {} }) {
+  // 判断是否需要删除db
+  if (state.dbBuildInfo && state.dbBuildInfo === 'custom') {
+    return {}
+  }
+
   try {
     const { __TmpCredentials } = instance
     if (state.clusterId) {
