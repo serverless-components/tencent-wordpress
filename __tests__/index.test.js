@@ -43,10 +43,6 @@ it('Using template should deploy success', async () => {
   expect(outputs.db).toBeDefined()
   expect(outputs.db.clusterId).toContain('cynosdbmysql-')
   expect(outputs.db.dbMode).toBe('SERVERLESS')
-  expect(outputs.db.connection).toEqual({
-    ip: expect.any(String),
-    port: expect.any(Number)
-  })
 
   // layer
   expect(outputs.layer).toBeDefined()
