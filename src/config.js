@@ -12,11 +12,8 @@ const CONFIGS = {
 
   shimPath: path.join(__dirname, '_shims'),
 
-  // templateUrl:
-  //   'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo.zip',
-
   templateUrl:
-    'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo-test.zip',
+    'https://serverless-templates-1300862921.cos.ap-beijing.myqcloud.com/wordpress-demo.zip',
 
   bucket: 'wordpress-serverless-code',
 

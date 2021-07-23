@@ -457,9 +457,9 @@ class ServerlessComponent extends Component {
       removeCfs({ instance: this, region, state: state.cfs })
     ])
 
-    // 判读是否为自建TDSQL-C数据库
+    // 判读是否为TDSQL-C数据库
     // 是则执行删除
-    if (this.state.db.dbBuildInfo && this.state.db.dbBuildInfo === CONFIGS.db.dbMode) {
+    if (this.state.db && this.state.db.dbBuildInfo && this.state.db.dbBuildInfo === CONFIGS.db.dbMode) {
       await removeDatabase({ instance: this, region, state: state.db })
     }
 

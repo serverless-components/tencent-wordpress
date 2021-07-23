@@ -27,7 +27,6 @@ it('Using template should deploy success', async () => {
   const { outputs } = instance
   expect(instance.instanceName).toEqual(instanceYaml.name)
 
-  console.log(outputs)
   // vpc
   expect(outputs.vpc).toBeDefined()
   expect(outputs.vpc.region).toBe('ap-shanghai')
@@ -43,6 +42,10 @@ it('Using template should deploy success', async () => {
   expect(outputs.db).toBeDefined()
   expect(outputs.db.clusterId).toContain('cynosdbmysql-')
   expect(outputs.db.dbMode).toBe('SERVERLESS')
+  expect(outputs.db.connection).toEqual({
+    ip: expect.any(String),
+    port: expect.any(Number)
+  })
 
   // layer
   expect(outputs.layer).toBeDefined()
