@@ -101,7 +101,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     return result
   }
 
-  console.log(`.....Create WP function ${sdkInput.handler} , ${sdkInput.type}`)
+  console.log(`Create WP function ${sdkInput.handler} , ${sdkInput.type}`)
   const outputs = await scf.deploy(deepClone(sdkInput))
 
   return formatOutputs(outputs)

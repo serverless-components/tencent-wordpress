@@ -17,7 +17,7 @@ inputs:
 # db:
 #   netMode: local
 #   host: xx.xx.xx.xx
-#   dataBaseName: xxxx
+#   databaseName: xxxx
 #   user: root
 #   port: 3306
 #   password: xxxx

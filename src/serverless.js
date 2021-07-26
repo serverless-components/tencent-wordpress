@@ -122,7 +122,6 @@ class ServerlessComponent extends Component {
       state: this.state.cfs
     })
     this.state.cfs = cfsOutput
-    console.log(`CfsInfo ${cfsOutput.cfsId}`)
 
     // 3. 判断部署database
     const dbConfig = {}
@@ -146,7 +145,7 @@ class ServerlessComponent extends Component {
 
       // 数据库配置
       dbConfig.DB_USER = inputs.db.user
-      dbConfig.DB_NAME = inputs.db.dataBaseName
+      dbConfig.DB_NAME = inputs.db.databaseName
       dbConfig.DB_PASSWORD = inputs.db.password
       dbConfig.DB_HOST = inputs.db.host
       dbConfig.DB_PORT = inputs.db.port
@@ -459,7 +458,11 @@ class ServerlessComponent extends Component {
 
     // 判读是否为TDSQL-C数据库
     // 是则执行删除
-    if (this.state.db && this.state.db.dbBuildInfo && this.state.db.dbBuildInfo === CONFIGS.db.dbMode) {
+    if (
+      this.state.db &&
+      this.state.db.dbBuildInfo &&
+      this.state.db.dbBuildInfo === CONFIGS.db.dbMode
+    ) {
       await removeDatabase({ instance: this, region, state: state.db })
     }
 
