@@ -196,7 +196,7 @@ class ServerlessComponent extends Component {
     } else {
       initFaasInputs = defaultInitFaasInputs
     }
-    console.log(`CfsInfo ${cfsOutput.cfsId}`)
+
     const wpInitOutput = await deployFaas({
       instance: this,
       inputs: {
