@@ -1,4 +1,5 @@
 <?php
+error_reporting(0);
 // A special handler.
 
 // All requests through API Gateway are HTTPS.
