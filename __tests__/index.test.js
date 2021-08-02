@@ -52,7 +52,7 @@ it('Using template should deploy success', async () => {
   expect(outputs.layer.name).toContain('wp-layer')
   expect(outputs.layer.version).toBeGreaterThanOrEqual(1)
   expect(outputs.layer.runtimes).toEqual([
-    'CustomRuntime'
+    'Php7'
   ])
 
 
@@ -69,7 +69,7 @@ it('Using template should deploy success', async () => {
   // wpServerFaas
   expect(outputs.wpServerFaas).toBeDefined()
   expect(outputs.wpServerFaas.name).toContain('wp-server')
-  expect(outputs.wpServerFaas.runtime).toEqual('CustomRuntime')
+  expect(outputs.wpServerFaas.runtime).toEqual('Php7')
   expect(outputs.wpServerFaas.layers).toEqual([
     {
       name: outputs.layer.name,

@@ -67,6 +67,22 @@ class ServerlessComponent extends Component {
 
     console.log(`Deploying ${framework} Application (${uuid})`)
 
+    // 首先判断是否配置了db信息
+    // 如使用云上数据库，则判断是指定了vpc
+    let hasDbConfig = false
+    let { dbMode } = CONFIGS.db
+    if (inputs.db) {
+      dbMode = 'DEFAULT'
+      hasDbConfig = true
+      const { netMode } = inputs.db
+      if (netMode === 'local' && !inputs.vpc) {
+        throw new ApiTypeError(
+          'VpcNotSet',
+          "Vpc configuration must be set when Db netMode is 'local'"
+        )
+      }
+    }
+
     // 1. 部署VPC
     let deployVpcHandler = deployByDefaultVpc
     if (inputs.vpc) {
@@ -93,41 +109,52 @@ class ServerlessComponent extends Component {
 
     this.state.vpc = vpcOutput
 
-    // 2. 部署 cfs 和 database
-    // 此处并行部署为了优化部署时间
+    // 2. 部署 cfs
     if (inputs.cfs) {
       inputs.cfs.fsName = `${CONFIGS.cfs.name}-${uuid}`
     } else {
       inputs.cfs = {}
       inputs.cfs.fsName = `${CONFIGS.cfs.name}-${uuid}`
     }
-    const [cfsOutput, dbOutput] = await Promise.all([
-      deployCfs({
-        instance: this,
-        inputs,
-        state: this.state.cfs
-      }),
-      deployDatabase({
+    const cfsOutput = await deployCfs({
+      instance: this,
+      inputs,
+      state: this.state.cfs
+    })
+    this.state.cfs = cfsOutput
+
+    // 3. 判断部署database
+    const dbConfig = {}
+    let dbOutput = {}
+    if (!hasDbConfig) {
+      dbOutput = await deployDatabase({
         instance: this,
         inputs,
         state: this.state.db
       })
-    ])
-    this.state.cfs = cfsOutput
+      dbOutput.dbBuildInfo = dbMode
+
+      // 数据库配置
+      dbConfig.DB_USER = 'root'
+      dbConfig.DB_NAME = CONFIGS.database
+      dbConfig.DB_PASSWORD = dbOutput.adminPassword
+      dbConfig.DB_HOST = dbOutput.connection.ip
+      dbConfig.DB_PORT = dbOutput.connection.port
+    } else {
+      dbOutput.dbBuildInfo = dbMode
+
+      // 数据库配置
+      dbConfig.DB_USER = inputs.db.user
+      dbConfig.DB_NAME = inputs.db.databaseName
+      dbConfig.DB_PASSWORD = inputs.db.password
+      dbConfig.DB_HOST = inputs.db.host
+      dbConfig.DB_PORT = inputs.db.port
+
+      dbOutput = dbConfig
+    }
     this.state.db = dbOutput
 
-    // console.log('++++++++ dbOutput', dbOutput)
-
-    // 数据库配置
-    const dbConfig = {
-      DB_USER: 'root',
-      DB_NAME: CONFIGS.database,
-      DB_PASSWORD: dbOutput.adminPassword,
-      DB_HOST: dbOutput.connection.ip,
-      DB_PORT: dbOutput.connection.port
-    }
-
-    // 3. 部署 wp-init 函数
+    // 4. 部署 wp-init 函数
     // wp-init 函数需要配置 vpc，cfs
     let initFaasInputs = {}
     const defaultInitFaasInputs = {
@@ -135,6 +162,10 @@ class ServerlessComponent extends Component {
       // 覆盖名称
       name: `${CONFIGS.wpInitFaas.name}-${uuid}`,
       environments: [
+        {
+          key: 'DB_MODE',
+          value: dbMode
+        },
         {
           key: 'DB_USER',
           value: dbConfig.DB_USER
@@ -146,6 +177,10 @@ class ServerlessComponent extends Component {
         {
           key: 'DB_HOST',
           value: dbConfig.DB_HOST
+        },
+        {
+          key: 'DB_PORT',
+          value: dbConfig.DB_PORT
         },
         {
           key: 'DB_NAME',
@@ -161,6 +196,7 @@ class ServerlessComponent extends Component {
     } else {
       initFaasInputs = defaultInitFaasInputs
     }
+
     const wpInitOutput = await deployFaas({
       instance: this,
       inputs: {
@@ -187,7 +223,7 @@ class ServerlessComponent extends Component {
 
     this.state.wpInitFaas = wpInitOutput
 
-    // 4. 上传 wordpress 代码到 COS
+    // 5. 上传 wordpress 代码到 COS
     const wpCodeZip = await getCodeZipPath({ instance: this, inputs })
     const wpCodes = await uploadCodeToCos({
       region,
@@ -200,7 +236,7 @@ class ServerlessComponent extends Component {
       }
     })
 
-    // 5. 调用 wp-init 函数，同步函数代码
+    // 6. 调用 wp-init 函数，同步函数代码
     console.log(`Start initialize database and wordpress code`)
     const invokeOutput = await invokeFaas({
       instance: this,
@@ -233,7 +269,7 @@ class ServerlessComponent extends Component {
       console.log(`Sync wordpress source code success`)
     }
 
-    // 6. 部署 layer
+    // 7. 部署 layer
     const layerOutput = await deployLayer({
       instance: this,
       inputs: {
@@ -256,7 +292,7 @@ class ServerlessComponent extends Component {
 
     this.state.layer = layerOutput
 
-    // 7. 部署 wp-server 函数
+    // 8. 部署 wp-server 函数
     // wp-server 函数需要配置 vpc，cfs，环境变量
     let serverFaasInputs = {}
     const defaultServerFaasConfig = {
@@ -264,6 +300,10 @@ class ServerlessComponent extends Component {
       // 覆盖函数名称
       name: `${CONFIGS.wpServerFaas.name}-${uuid}`,
       environments: [
+        {
+          key: 'DB_MODE',
+          value: dbMode
+        },
         {
           key: 'DB_NAME',
           value: dbConfig.DB_NAME
@@ -278,15 +318,11 @@ class ServerlessComponent extends Component {
         },
         {
           key: 'DB_HOST',
-          value: dbConfig.DB_HOST
+          value: dbConfig.DB_HOST + ':' + dbConfig.DB_PORT.toString()
         },
         {
           key: 'MOUNT_DIR',
           value: CONFIGS.wpServerFaas.wpCodeDir
-        },
-        {
-          key: 'HANDLER',
-          value: CONFIGS.wpServerFaas.appHandler
         }
       ]
     }
@@ -332,19 +368,21 @@ class ServerlessComponent extends Component {
 
     this.state.wpServerFaas = wpServerOutput
 
-    // 8. 创建 API 网关
+    // 9. 创建 API 网关
     if (inputs.apigw) {
       inputs.apigw.name = `${CONFIGS.apigw.name}_${uuid}`
       inputs.apigw.faas = {
         name: wpServerOutput.name,
-        namespace: wpServerOutput.namespace
+        namespace: wpServerOutput.namespace,
+        functionType: 'web'
       }
     } else {
       inputs.apigw = {}
       inputs.apigw.name = `${CONFIGS.apigw.name}_${uuid}`
       inputs.apigw.faas = {
         name: wpServerOutput.name,
-        namespace: wpServerOutput.namespace
+        namespace: wpServerOutput.namespace,
+        functionType: 'web'
       }
     }
     const apigwOutput = await deployApigw({
@@ -396,7 +434,7 @@ class ServerlessComponent extends Component {
 
   async remove() {
     this.initialize()
-    const { framework, state } = this
+    const { framework, state, CONFIGS } = this
     const { region } = state
 
     console.log(`Removing ${framework} App`)
@@ -410,14 +448,23 @@ class ServerlessComponent extends Component {
     // 删除 wp-server 函数
     await removeFaas({ instance: this, region, state: state.wpServerFaas })
 
-    // 并行 删除 层、文件系统 和 数据库
+    // 并行 删除 层、文件系统
     // 以上资源删除结束等待3s，以防后端异步逻辑未同步
     await sleep(3000)
     await Promise.all([
       removeLayer({ instance: this, region, state: state.layer }),
-      removeCfs({ instance: this, region, state: state.cfs }),
-      removeDatabase({ instance: this, region, state: state.db })
+      removeCfs({ instance: this, region, state: state.cfs })
     ])
+
+    // 判读是否为TDSQL-C数据库
+    // 是则执行删除
+    if (
+      this.state.db &&
+      this.state.db.dbBuildInfo &&
+      this.state.db.dbBuildInfo === CONFIGS.db.dbMode
+    ) {
+      await removeDatabase({ instance: this, region, state: state.db })
+    }
 
     // 删除 VPC
     // 由于以上资源均依赖 VPC，所以需要最后删除

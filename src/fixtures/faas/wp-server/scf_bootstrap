@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+export PORT=9000
+
+export WORK_PLACE=/var/user/
+export MOUNT_DIR=/mnt/wordpress/
+export WP_HANDLER=handler.php
+
+export PATH=/opt/bin:$PATH
+export LD_LIBRARY_PATH=/opt/lib/:$LD_LIBRARY_PATH
+export PHP_INI_SCAN_DIR=/opt/etc/php.d
+
+cd $MOUNT_DIR
+/opt/bin/php -S 0.0.0.0:9000 -d extension_dir=/opt/lib/php/modules/ $WP_HANDLER
