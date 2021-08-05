@@ -12,7 +12,9 @@ a {
   color: #0073aa;
 }
 
-a:hover, a:active, a:focus {
+a:hover,
+a:active,
+a:focus {
   color: #0096dd;
 }
 
@@ -28,7 +30,9 @@ span.wp-media-buttons-icon:before {
   color: #0073aa;
 }
 
-.wp-core-ui .button-link:hover, .wp-core-ui .button-link:active, .wp-core-ui .button-link:focus {
+.wp-core-ui .button-link:hover,
+.wp-core-ui .button-link:active,
+.wp-core-ui .button-link:focus {
   color: #0096dd;
 }
 
@@ -51,36 +55,36 @@ span.wp-media-buttons-icon:before {
 }
 
 /* Forms */
-input[type=checkbox]:checked::before {
-  content: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20d%3D%27M14.83%204.89l1.34.94-5.81%208.38H9.02L5.78%209.67l1.34-1.25%202.57%202.4z%27%20fill%3D%27%237e8993%27%2F%3E%3C%2Fsvg%3E");
+input[type='checkbox']:checked::before {
+  content: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2020%2020%27%3E%3Cpath%20d%3D%27M14.83%204.89l1.34.94-5.81%208.38H9.02L5.78%209.67l1.34-1.25%202.57%202.4z%27%20fill%3D%27%237e8993%27%2F%3E%3C%2Fsvg%3E');
 }
 
-input[type=radio]:checked::before {
+input[type='radio']:checked::before {
   background: #7e8993;
 }
 
-.wp-core-ui input[type="reset"]:hover,
-.wp-core-ui input[type="reset"]:active {
+.wp-core-ui input[type='reset']:hover,
+.wp-core-ui input[type='reset']:active {
   color: #0096dd;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="color"]:focus,
-input[type="date"]:focus,
-input[type="datetime"]:focus,
-input[type="datetime-local"]:focus,
-input[type="email"]:focus,
-input[type="month"]:focus,
-input[type="number"]:focus,
-input[type="search"]:focus,
-input[type="tel"]:focus,
-input[type="text"]:focus,
-input[type="time"]:focus,
-input[type="url"]:focus,
-input[type="week"]:focus,
-input[type="checkbox"]:focus,
-input[type="radio"]:focus,
+input[type='text']:focus,
+input[type='password']:focus,
+input[type='color']:focus,
+input[type='date']:focus,
+input[type='datetime']:focus,
+input[type='datetime-local']:focus,
+input[type='email']:focus,
+input[type='month']:focus,
+input[type='number']:focus,
+input[type='search']:focus,
+input[type='tel']:focus,
+input[type='text']:focus,
+input[type='time']:focus,
+input[type='url']:focus,
+input[type='week']:focus,
+input[type='checkbox']:focus,
+input[type='radio']:focus,
 select:focus,
 textarea:focus {
   border-color: #096484;
@@ -157,7 +161,8 @@ textarea:focus {
   color: #fff;
 }
 
-.wp-core-ui .button-primary:hover, .wp-core-ui .button-primary:focus {
+.wp-core-ui .button-primary:hover,
+.wp-core-ui .button-primary:focus {
   background: #e3af55;
   border-color: #dfa33b;
   color: #fff;
@@ -173,7 +178,9 @@ textarea:focus {
   color: #fff;
 }
 
-.wp-core-ui .button-primary.active, .wp-core-ui .button-primary.active:focus, .wp-core-ui .button-primary.active:hover {
+.wp-core-ui .button-primary.active,
+.wp-core-ui .button-primary.active:focus,
+.wp-core-ui .button-primary.active:hover {
   background: #e1a948;
   color: #fff;
   border-color: #bd831f;
@@ -302,7 +309,8 @@ textarea:focus {
   color: #e2ecf1;
 }
 
-#adminmenu .wp-submenu a:focus, #adminmenu .wp-submenu a:hover,
+#adminmenu .wp-submenu a:focus,
+#adminmenu .wp-submenu a:hover,
 #adminmenu .wp-has-current-submenu .wp-submenu a:focus,
 #adminmenu .wp-has-current-submenu .wp-submenu a:hover,
 .folded #adminmenu .wp-has-current-submenu .wp-submenu a:focus,
@@ -321,7 +329,8 @@ textarea:focus {
   color: #fff;
 }
 
-#adminmenu .wp-submenu li.current a:hover, #adminmenu .wp-submenu li.current a:focus,
+#adminmenu .wp-submenu li.current a:hover,
+#adminmenu .wp-submenu li.current a:focus,
 #adminmenu a.wp-has-current-submenu:focus + .wp-submenu li.current a:hover,
 #adminmenu a.wp-has-current-submenu:focus + .wp-submenu li.current a:focus,
 #adminmenu .wp-has-current-submenu.opensub .wp-submenu li.current a:hover,
@@ -481,7 +490,12 @@ ul#adminmenu > li.current > a.current:after {
   color: #e5f8ff;
 }
 
-#wpadminbar > #wp-toolbar > #wp-admin-bar-top-secondary > #wp-admin-bar-search #adminbarsearch input.adminbar-input:focus {
+#wpadminbar
+  > #wp-toolbar
+  > #wp-admin-bar-top-secondary
+  > #wp-admin-bar-search
+  #adminbarsearch
+  input.adminbar-input:focus {
   color: #fff;
   background: #6eb9d4;
 }

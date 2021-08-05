@@ -1,4 +1,4 @@
-var topWin = window.dialogArguments || opener || parent || top;
+var topWin = window.dialogArguments || opener || parent || top
 
 function fileDialogStart() {}
 function fileQueued() {}
@@ -20,35 +20,35 @@ function uploadError() {}
 function cancelUpload() {}
 
 function switchUploader() {
-	jQuery( '#' + swfu.customSettings.swfupload_element_id ).hide();
-	jQuery( '#' + swfu.customSettings.degraded_element_id ).show();
-	jQuery( '.upload-html-bypass' ).hide();
+  jQuery('#' + swfu.customSettings.swfupload_element_id).hide()
+  jQuery('#' + swfu.customSettings.degraded_element_id).show()
+  jQuery('.upload-html-bypass').hide()
 }
 
 function swfuploadPreLoad() {
-	switchUploader();
+  switchUploader()
 }
 
 function swfuploadLoadFailed() {
-	switchUploader();
+  switchUploader()
 }
 
-jQuery(document).ready(function($){
-	$( 'input[type="radio"]', '#media-items' ).on( 'click', function(){
-		var tr = $(this).closest('tr');
+jQuery(document).ready(function($) {
+  $('input[type="radio"]', '#media-items').on('click', function() {
+    var tr = $(this).closest('tr')
 
-		if ( $(tr).hasClass('align') )
-			setUserSetting('align', $(this).val());
-		else if ( $(tr).hasClass('image-size') )
-			setUserSetting('imgsize', $(this).val());
-	});
+    if ($(tr).hasClass('align')) setUserSetting('align', $(this).val())
+    else if ($(tr).hasClass('image-size')) setUserSetting('imgsize', $(this).val())
+  })
 
-	$( 'button.button', '#media-items' ).on( 'click', function(){
-		var c = this.className || '';
-		c = c.match(/url([^ '"]+)/);
-		if ( c && c[1] ) {
-			setUserSetting('urlbutton', c[1]);
-			$(this).siblings('.urlfield').val( $(this).attr('title') );
-		}
-	});
-});
+  $('button.button', '#media-items').on('click', function() {
+    var c = this.className || ''
+    c = c.match(/url([^ '"]+)/)
+    if (c && c[1]) {
+      setUserSetting('urlbutton', c[1])
+      $(this)
+        .siblings('.urlfield')
+        .val($(this).attr('title'))
+    }
+  })
+})

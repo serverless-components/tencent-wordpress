@@ -3,152 +3,165 @@
  */
 
 /* eslint consistent-this: [ "error", "control" ] */
-(function( component ) {
-	'use strict';
+;(function(component) {
+  'use strict'
 
-	var AudioWidgetModel, AudioWidgetControl, AudioDetailsMediaFrame;
+  var AudioWidgetModel, AudioWidgetControl, AudioDetailsMediaFrame
 
-	/**
-	 * Custom audio details frame that removes the replace-audio state.
-	 *
-	 * @class    wp.mediaWidgets.controlConstructors~AudioDetailsMediaFrame
-	 * @augments wp.media.view.MediaFrame.AudioDetails
-	 */
-	AudioDetailsMediaFrame = wp.media.view.MediaFrame.AudioDetails.extend(/** @lends wp.mediaWidgets.controlConstructors~AudioDetailsMediaFrame.prototype */{
+  /**
+   * Custom audio details frame that removes the replace-audio state.
+   *
+   * @class    wp.mediaWidgets.controlConstructors~AudioDetailsMediaFrame
+   * @augments wp.media.view.MediaFrame.AudioDetails
+   */
+  AudioDetailsMediaFrame = wp.media.view.MediaFrame.AudioDetails.extend(
+    /** @lends wp.mediaWidgets.controlConstructors~AudioDetailsMediaFrame.prototype */ {
+      /**
+       * Create the default states.
+       *
+       * @return {void}
+       */
+      createStates: function createStates() {
+        this.states.add([
+          new wp.media.controller.AudioDetails({
+            media: this.media
+          }),
 
-		/**
-		 * Create the default states.
-		 *
-		 * @return {void}
-		 */
-		createStates: function createStates() {
-			this.states.add([
-				new wp.media.controller.AudioDetails({
-					media: this.media
-				}),
+          new wp.media.controller.MediaLibrary({
+            type: 'audio',
+            id: 'add-audio-source',
+            title: wp.media.view.l10n.audioAddSourceTitle,
+            toolbar: 'add-audio-source',
+            media: this.media,
+            menu: false
+          })
+        ])
+      }
+    }
+  )
 
-				new wp.media.controller.MediaLibrary({
-					type: 'audio',
-					id: 'add-audio-source',
-					title: wp.media.view.l10n.audioAddSourceTitle,
-					toolbar: 'add-audio-source',
-					media: this.media,
-					menu: false
-				})
-			]);
-		}
-	});
+  /**
+   * Audio widget model.
+   *
+   * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
+   *
+   * @class    wp.mediaWidgets.modelConstructors.media_audio
+   * @augments wp.mediaWidgets.MediaWidgetModel
+   */
+  AudioWidgetModel = component.MediaWidgetModel.extend({})
 
-	/**
-	 * Audio widget model.
-	 *
-	 * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
-	 *
-	 * @class    wp.mediaWidgets.modelConstructors.media_audio
-	 * @augments wp.mediaWidgets.MediaWidgetModel
-	 */
-	AudioWidgetModel = component.MediaWidgetModel.extend({});
+  /**
+   * Audio widget control.
+   *
+   * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
+   *
+   * @class    wp.mediaWidgets.controlConstructors.media_audio
+   * @augments wp.mediaWidgets.MediaWidgetControl
+   */
+  AudioWidgetControl = component.MediaWidgetControl.extend(
+    /** @lends wp.mediaWidgets.controlConstructors.media_audio.prototype */ {
+      /**
+       * Show display settings.
+       *
+       * @type {boolean}
+       */
+      showDisplaySettings: false,
 
-	/**
-	 * Audio widget control.
-	 *
-	 * See WP_Widget_Audio::enqueue_admin_scripts() for amending prototype from PHP exports.
-	 *
-	 * @class    wp.mediaWidgets.controlConstructors.media_audio
-	 * @augments wp.mediaWidgets.MediaWidgetControl
-	 */
-	AudioWidgetControl = component.MediaWidgetControl.extend(/** @lends wp.mediaWidgets.controlConstructors.media_audio.prototype */{
+      /**
+       * Map model props to media frame props.
+       *
+       * @param {Object} modelProps - Model props.
+       * @return {Object} Media frame props.
+       */
+      mapModelToMediaFrameProps: function mapModelToMediaFrameProps(modelProps) {
+        var control = this,
+          mediaFrameProps
+        mediaFrameProps = component.MediaWidgetControl.prototype.mapModelToMediaFrameProps.call(
+          control,
+          modelProps
+        )
+        mediaFrameProps.link = 'embed'
+        return mediaFrameProps
+      },
 
-		/**
-		 * Show display settings.
-		 *
-		 * @type {boolean}
-		 */
-		showDisplaySettings: false,
+      /**
+       * Render preview.
+       *
+       * @return {void}
+       */
+      renderPreview: function renderPreview() {
+        var control = this,
+          previewContainer,
+          previewTemplate,
+          attachmentId,
+          attachmentUrl
+        attachmentId = control.model.get('attachment_id')
+        attachmentUrl = control.model.get('url')
 
-		/**
-		 * Map model props to media frame props.
-		 *
-		 * @param {Object} modelProps - Model props.
-		 * @return {Object} Media frame props.
-		 */
-		mapModelToMediaFrameProps: function mapModelToMediaFrameProps( modelProps ) {
-			var control = this, mediaFrameProps;
-			mediaFrameProps = component.MediaWidgetControl.prototype.mapModelToMediaFrameProps.call( control, modelProps );
-			mediaFrameProps.link = 'embed';
-			return mediaFrameProps;
-		},
+        if (!attachmentId && !attachmentUrl) {
+          return
+        }
 
-		/**
-		 * Render preview.
-		 *
-		 * @return {void}
-		 */
-		renderPreview: function renderPreview() {
-			var control = this, previewContainer, previewTemplate, attachmentId, attachmentUrl;
-			attachmentId = control.model.get( 'attachment_id' );
-			attachmentUrl = control.model.get( 'url' );
+        previewContainer = control.$el.find('.media-widget-preview')
+        previewTemplate = wp.template('wp-media-widget-audio-preview')
 
-			if ( ! attachmentId && ! attachmentUrl ) {
-				return;
-			}
+        previewContainer.html(
+          previewTemplate({
+            model: {
+              attachment_id: control.model.get('attachment_id'),
+              src: attachmentUrl
+            },
+            error: control.model.get('error')
+          })
+        )
+        wp.mediaelement.initialize()
+      },
 
-			previewContainer = control.$el.find( '.media-widget-preview' );
-			previewTemplate = wp.template( 'wp-media-widget-audio-preview' );
+      /**
+       * Open the media audio-edit frame to modify the selected item.
+       *
+       * @return {void}
+       */
+      editMedia: function editMedia() {
+        var control = this,
+          mediaFrame,
+          metadata,
+          updateCallback
 
-			previewContainer.html( previewTemplate({
-				model: {
-					attachment_id: control.model.get( 'attachment_id' ),
-					src: attachmentUrl
-				},
-				error: control.model.get( 'error' )
-			}));
-			wp.mediaelement.initialize();
-		},
+        metadata = control.mapModelToMediaFrameProps(control.model.toJSON())
 
-		/**
-		 * Open the media audio-edit frame to modify the selected item.
-		 *
-		 * @return {void}
-		 */
-		editMedia: function editMedia() {
-			var control = this, mediaFrame, metadata, updateCallback;
+        // Set up the media frame.
+        mediaFrame = new AudioDetailsMediaFrame({
+          frame: 'audio',
+          state: 'audio-details',
+          metadata: metadata
+        })
+        wp.media.frame = mediaFrame
+        mediaFrame.$el.addClass('media-widget')
 
-			metadata = control.mapModelToMediaFrameProps( control.model.toJSON() );
+        updateCallback = function(mediaFrameProps) {
+          // Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
+          control.selectedAttachment.set(mediaFrameProps)
 
-			// Set up the media frame.
-			mediaFrame = new AudioDetailsMediaFrame({
-				frame: 'audio',
-				state: 'audio-details',
-				metadata: metadata
-			});
-			wp.media.frame = mediaFrame;
-			mediaFrame.$el.addClass( 'media-widget' );
+          control.model.set(
+            _.extend(control.model.defaults(), control.mapMediaToModelProps(mediaFrameProps), {
+              error: false
+            })
+          )
+        }
 
-			updateCallback = function( mediaFrameProps ) {
+        mediaFrame.state('audio-details').on('update', updateCallback)
+        mediaFrame.state('replace-audio').on('replace', updateCallback)
+        mediaFrame.on('close', function() {
+          mediaFrame.detach()
+        })
 
-				// Update cached attachment object to avoid having to re-fetch. This also triggers re-rendering of preview.
-				control.selectedAttachment.set( mediaFrameProps );
+        mediaFrame.open()
+      }
+    }
+  )
 
-				control.model.set( _.extend(
-					control.model.defaults(),
-					control.mapMediaToModelProps( mediaFrameProps ),
-					{ error: false }
-				) );
-			};
-
-			mediaFrame.state( 'audio-details' ).on( 'update', updateCallback );
-			mediaFrame.state( 'replace-audio' ).on( 'replace', updateCallback );
-			mediaFrame.on( 'close', function() {
-				mediaFrame.detach();
-			});
-
-			mediaFrame.open();
-		}
-	});
-
-	// Exports.
-	component.controlConstructors.media_audio = AudioWidgetControl;
-	component.modelConstructors.media_audio = AudioWidgetModel;
-
-})( wp.mediaWidgets );
+  // Exports.
+  component.controlConstructors.media_audio = AudioWidgetControl
+  component.modelConstructors.media_audio = AudioWidgetModel
+})(wp.mediaWidgets)

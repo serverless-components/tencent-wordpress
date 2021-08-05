@@ -13,61 +13,50 @@
 //>>docs: http://api.jqueryui.com/shake-effect/
 //>>demos: http://jqueryui.com/effect/
 
-( function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+;(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', './effect'], factory)
+  } else {
+    // Browser globals
+    factory(jQuery)
+  }
+})(function($) {
+  return $.effects.define('shake', function(options, done) {
+    var i = 1,
+      element = $(this),
+      direction = options.direction || 'left',
+      distance = options.distance || 20,
+      times = options.times || 3,
+      anims = times * 2 + 1,
+      speed = Math.round(options.duration / anims),
+      ref = direction === 'up' || direction === 'down' ? 'top' : 'left',
+      positiveMotion = direction === 'up' || direction === 'left',
+      animation = {},
+      animation1 = {},
+      animation2 = {},
+      queuelen = element.queue().length
 
-		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./effect"
-		], factory );
-	} else {
+    $.effects.createPlaceholder(element)
 
-		// Browser globals
-		factory( jQuery );
-	}
-}( function( $ ) {
+    // Animation
+    animation[ref] = (positiveMotion ? '-=' : '+=') + distance
+    animation1[ref] = (positiveMotion ? '+=' : '-=') + distance * 2
+    animation2[ref] = (positiveMotion ? '-=' : '+=') + distance * 2
 
-return $.effects.define( "shake", function( options, done ) {
+    // Animate
+    element.animate(animation, speed, options.easing)
 
-	var i = 1,
-		element = $( this ),
-		direction = options.direction || "left",
-		distance = options.distance || 20,
-		times = options.times || 3,
-		anims = times * 2 + 1,
-		speed = Math.round( options.duration / anims ),
-		ref = ( direction === "up" || direction === "down" ) ? "top" : "left",
-		positiveMotion = ( direction === "up" || direction === "left" ),
-		animation = {},
-		animation1 = {},
-		animation2 = {},
+    // Shakes
+    for (; i < times; i++) {
+      element.animate(animation1, speed, options.easing).animate(animation2, speed, options.easing)
+    }
 
-		queuelen = element.queue().length;
+    element
+      .animate(animation1, speed, options.easing)
+      .animate(animation, speed / 2, options.easing)
+      .queue(done)
 
-	$.effects.createPlaceholder( element );
-
-	// Animation
-	animation[ ref ] = ( positiveMotion ? "-=" : "+=" ) + distance;
-	animation1[ ref ] = ( positiveMotion ? "+=" : "-=" ) + distance * 2;
-	animation2[ ref ] = ( positiveMotion ? "-=" : "+=" ) + distance * 2;
-
-	// Animate
-	element.animate( animation, speed, options.easing );
-
-	// Shakes
-	for ( ; i < times; i++ ) {
-		element
-			.animate( animation1, speed, options.easing )
-			.animate( animation2, speed, options.easing );
-	}
-
-	element
-		.animate( animation1, speed, options.easing )
-		.animate( animation, speed / 2, options.easing )
-		.queue( done );
-
-	$.effects.unshift( element, queuelen, anims + 1 );
-} );
-
-} ) );
+    $.effects.unshift(element, queuelen, anims + 1)
+  })
+})

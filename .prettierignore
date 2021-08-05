@@ -3,4 +3,4 @@ dist
 node_modules
 CHANGELOG.md
 *.test.js
-example/wordpress
+example

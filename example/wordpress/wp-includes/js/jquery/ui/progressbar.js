@@ -18,160 +18,150 @@
 //>>css.structure: ../../themes/base/progressbar.css
 //>>css.theme: ../../themes/base/theme.css
 
-( function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+;(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', './core'], factory)
+  } else {
+    // Browser globals
+    factory(jQuery)
+  }
+})(function($) {
+  return $.widget('ui.progressbar', {
+    version: '1.12.1',
+    options: {
+      classes: {
+        'ui-progressbar': 'ui-corner-all',
+        'ui-progressbar-value': 'ui-corner-left',
+        'ui-progressbar-complete': 'ui-corner-right'
+      },
+      max: 100,
+      value: 0,
 
-		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./core"
-		], factory );
-	} else {
+      change: null,
+      complete: null
+    },
 
-		// Browser globals
-		factory( jQuery );
-	}
-}( function( $ ) {
+    min: 0,
 
-return $.widget( "ui.progressbar", {
-	version: "1.12.1",
-	options: {
-		classes: {
-			"ui-progressbar": "ui-corner-all",
-			"ui-progressbar-value": "ui-corner-left",
-			"ui-progressbar-complete": "ui-corner-right"
-		},
-		max: 100,
-		value: 0,
+    _create: function() {
+      // Constrain initial value
+      this.oldValue = this.options.value = this._constrainedValue()
 
-		change: null,
-		complete: null
-	},
+      this.element.attr({
+        // Only set static values; aria-valuenow and aria-valuemax are
+        // set inside _refreshValue()
+        role: 'progressbar',
+        'aria-valuemin': this.min
+      })
+      this._addClass('ui-progressbar', 'ui-widget ui-widget-content')
 
-	min: 0,
+      this.valueDiv = $('<div>').appendTo(this.element)
+      this._addClass(this.valueDiv, 'ui-progressbar-value', 'ui-widget-header')
+      this._refreshValue()
+    },
 
-	_create: function() {
+    _destroy: function() {
+      this.element.removeAttr('role aria-valuemin aria-valuemax aria-valuenow')
 
-		// Constrain initial value
-		this.oldValue = this.options.value = this._constrainedValue();
+      this.valueDiv.remove()
+    },
 
-		this.element.attr( {
+    value: function(newValue) {
+      if (newValue === undefined) {
+        return this.options.value
+      }
 
-			// Only set static values; aria-valuenow and aria-valuemax are
-			// set inside _refreshValue()
-			role: "progressbar",
-			"aria-valuemin": this.min
-		} );
-		this._addClass( "ui-progressbar", "ui-widget ui-widget-content" );
+      this.options.value = this._constrainedValue(newValue)
+      this._refreshValue()
+    },
 
-		this.valueDiv = $( "<div>" ).appendTo( this.element );
-		this._addClass( this.valueDiv, "ui-progressbar-value", "ui-widget-header" );
-		this._refreshValue();
-	},
+    _constrainedValue: function(newValue) {
+      if (newValue === undefined) {
+        newValue = this.options.value
+      }
 
-	_destroy: function() {
-		this.element.removeAttr( "role aria-valuemin aria-valuemax aria-valuenow" );
+      this.indeterminate = newValue === false
 
-		this.valueDiv.remove();
-	},
+      // Sanitize value
+      if (typeof newValue !== 'number') {
+        newValue = 0
+      }
 
-	value: function( newValue ) {
-		if ( newValue === undefined ) {
-			return this.options.value;
-		}
+      return this.indeterminate ? false : Math.min(this.options.max, Math.max(this.min, newValue))
+    },
 
-		this.options.value = this._constrainedValue( newValue );
-		this._refreshValue();
-	},
+    _setOptions: function(options) {
+      // Ensure "value" option is set after other values (like max)
+      var value = options.value
+      delete options.value
 
-	_constrainedValue: function( newValue ) {
-		if ( newValue === undefined ) {
-			newValue = this.options.value;
-		}
+      this._super(options)
 
-		this.indeterminate = newValue === false;
+      this.options.value = this._constrainedValue(value)
+      this._refreshValue()
+    },
 
-		// Sanitize value
-		if ( typeof newValue !== "number" ) {
-			newValue = 0;
-		}
+    _setOption: function(key, value) {
+      if (key === 'max') {
+        // Don't allow a max less than min
+        value = Math.max(this.min, value)
+      }
+      this._super(key, value)
+    },
 
-		return this.indeterminate ? false :
-			Math.min( this.options.max, Math.max( this.min, newValue ) );
-	},
+    _setOptionDisabled: function(value) {
+      this._super(value)
 
-	_setOptions: function( options ) {
+      this.element.attr('aria-disabled', value)
+      this._toggleClass(null, 'ui-state-disabled', !!value)
+    },
 
-		// Ensure "value" option is set after other values (like max)
-		var value = options.value;
-		delete options.value;
+    _percentage: function() {
+      return this.indeterminate
+        ? 100
+        : (100 * (this.options.value - this.min)) / (this.options.max - this.min)
+    },
 
-		this._super( options );
+    _refreshValue: function() {
+      var value = this.options.value,
+        percentage = this._percentage()
 
-		this.options.value = this._constrainedValue( value );
-		this._refreshValue();
-	},
+      this.valueDiv
+        .toggle(this.indeterminate || value > this.min)
+        .width(percentage.toFixed(0) + '%')
 
-	_setOption: function( key, value ) {
-		if ( key === "max" ) {
+      this._toggleClass(
+        this.valueDiv,
+        'ui-progressbar-complete',
+        null,
+        value === this.options.max
+      )._toggleClass('ui-progressbar-indeterminate', null, this.indeterminate)
 
-			// Don't allow a max less than min
-			value = Math.max( this.min, value );
-		}
-		this._super( key, value );
-	},
+      if (this.indeterminate) {
+        this.element.removeAttr('aria-valuenow')
+        if (!this.overlayDiv) {
+          this.overlayDiv = $('<div>').appendTo(this.valueDiv)
+          this._addClass(this.overlayDiv, 'ui-progressbar-overlay')
+        }
+      } else {
+        this.element.attr({
+          'aria-valuemax': this.options.max,
+          'aria-valuenow': value
+        })
+        if (this.overlayDiv) {
+          this.overlayDiv.remove()
+          this.overlayDiv = null
+        }
+      }
 
-	_setOptionDisabled: function( value ) {
-		this._super( value );
-
-		this.element.attr( "aria-disabled", value );
-		this._toggleClass( null, "ui-state-disabled", !!value );
-	},
-
-	_percentage: function() {
-		return this.indeterminate ?
-			100 :
-			100 * ( this.options.value - this.min ) / ( this.options.max - this.min );
-	},
-
-	_refreshValue: function() {
-		var value = this.options.value,
-			percentage = this._percentage();
-
-		this.valueDiv
-			.toggle( this.indeterminate || value > this.min )
-			.width( percentage.toFixed( 0 ) + "%" );
-
-		this
-			._toggleClass( this.valueDiv, "ui-progressbar-complete", null,
-				value === this.options.max )
-			._toggleClass( "ui-progressbar-indeterminate", null, this.indeterminate );
-
-		if ( this.indeterminate ) {
-			this.element.removeAttr( "aria-valuenow" );
-			if ( !this.overlayDiv ) {
-				this.overlayDiv = $( "<div>" ).appendTo( this.valueDiv );
-				this._addClass( this.overlayDiv, "ui-progressbar-overlay" );
-			}
-		} else {
-			this.element.attr( {
-				"aria-valuemax": this.options.max,
-				"aria-valuenow": value
-			} );
-			if ( this.overlayDiv ) {
-				this.overlayDiv.remove();
-				this.overlayDiv = null;
-			}
-		}
-
-		if ( this.oldValue !== value ) {
-			this.oldValue = value;
-			this._trigger( "change" );
-		}
-		if ( value === this.options.max ) {
-			this._trigger( "complete" );
-		}
-	}
-} );
-
-} ) );
+      if (this.oldValue !== value) {
+        this.oldValue = value
+        this._trigger('change')
+      }
+      if (value === this.options.max) {
+        this._trigger('complete')
+      }
+    }
+  })
+})

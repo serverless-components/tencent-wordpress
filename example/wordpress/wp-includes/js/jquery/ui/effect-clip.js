@@ -13,52 +13,44 @@
 //>>docs: http://api.jqueryui.com/clip-effect/
 //>>demos: http://jqueryui.com/effect/
 
-( function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+;(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', './effect'], factory)
+  } else {
+    // Browser globals
+    factory(jQuery)
+  }
+})(function($) {
+  return $.effects.define('clip', 'hide', function(options, done) {
+    var start,
+      animate = {},
+      element = $(this),
+      direction = options.direction || 'vertical',
+      both = direction === 'both',
+      horizontal = both || direction === 'horizontal',
+      vertical = both || direction === 'vertical'
 
-		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./effect"
-		], factory );
-	} else {
+    start = element.cssClip()
+    animate.clip = {
+      top: vertical ? (start.bottom - start.top) / 2 : start.top,
+      right: horizontal ? (start.right - start.left) / 2 : start.right,
+      bottom: vertical ? (start.bottom - start.top) / 2 : start.bottom,
+      left: horizontal ? (start.right - start.left) / 2 : start.left
+    }
 
-		// Browser globals
-		factory( jQuery );
-	}
-}( function( $ ) {
+    $.effects.createPlaceholder(element)
 
-return $.effects.define( "clip", "hide", function( options, done ) {
-	var start,
-		animate = {},
-		element = $( this ),
-		direction = options.direction || "vertical",
-		both = direction === "both",
-		horizontal = both || direction === "horizontal",
-		vertical = both || direction === "vertical";
+    if (options.mode === 'show') {
+      element.cssClip(animate.clip)
+      animate.clip = start
+    }
 
-	start = element.cssClip();
-	animate.clip = {
-		top: vertical ? ( start.bottom - start.top ) / 2 : start.top,
-		right: horizontal ? ( start.right - start.left ) / 2 : start.right,
-		bottom: vertical ? ( start.bottom - start.top ) / 2 : start.bottom,
-		left: horizontal ? ( start.right - start.left ) / 2 : start.left
-	};
-
-	$.effects.createPlaceholder( element );
-
-	if ( options.mode === "show" ) {
-		element.cssClip( animate.clip );
-		animate.clip = start;
-	}
-
-	element.animate( animate, {
-		queue: false,
-		duration: options.duration,
-		easing: options.easing,
-		complete: done
-	} );
-
-} );
-
-} ) );
+    element.animate(animate, {
+      queue: false,
+      duration: options.duration,
+      easing: options.easing,
+      complete: done
+    })
+  })
+})

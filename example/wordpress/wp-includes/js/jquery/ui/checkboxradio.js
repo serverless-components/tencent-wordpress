@@ -17,267 +17,267 @@
 //>>css.structure: ../../themes/base/checkboxradio.css
 //>>css.theme: ../../themes/base/theme.css
 
-( function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+;(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', './core'], factory)
+  } else {
+    // Browser globals
+    factory(jQuery)
+  }
+})(function($) {
+  $.widget('ui.checkboxradio', [
+    $.ui.formResetMixin,
+    {
+      version: '1.12.1',
+      options: {
+        disabled: null,
+        label: null,
+        icon: true,
+        classes: {
+          'ui-checkboxradio-label': 'ui-corner-all',
+          'ui-checkboxradio-icon': 'ui-corner-all'
+        }
+      },
 
-		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./core"
-		], factory );
-	} else {
+      _getCreateOptions: function() {
+        var disabled, labels
+        var that = this
+        var options = this._super() || {}
 
-		// Browser globals
-		factory( jQuery );
-	}
-}( function( $ ) {
+        // We read the type here, because it makes more sense to throw a element type error first,
+        // rather then the error for lack of a label. Often if its the wrong type, it
+        // won't have a label (e.g. calling on a div, btn, etc)
+        this._readType()
 
-$.widget( "ui.checkboxradio", [ $.ui.formResetMixin, {
-	version: "1.12.1",
-	options: {
-		disabled: null,
-		label: null,
-		icon: true,
-		classes: {
-			"ui-checkboxradio-label": "ui-corner-all",
-			"ui-checkboxradio-icon": "ui-corner-all"
-		}
-	},
+        labels = this.element.labels()
 
-	_getCreateOptions: function() {
-		var disabled, labels;
-		var that = this;
-		var options = this._super() || {};
+        // If there are multiple labels, use the last one
+        this.label = $(labels[labels.length - 1])
+        if (!this.label.length) {
+          $.error('No label found for checkboxradio widget')
+        }
 
-		// We read the type here, because it makes more sense to throw a element type error first,
-		// rather then the error for lack of a label. Often if its the wrong type, it
-		// won't have a label (e.g. calling on a div, btn, etc)
-		this._readType();
+        this.originalLabel = ''
 
-		labels = this.element.labels();
+        // We need to get the label text but this may also need to make sure it does not contain the
+        // input itself.
+        this.label
+          .contents()
+          .not(this.element[0])
+          .each(function() {
+            // The label contents could be text, html, or a mix. We concat each element to get a
+            // string representation of the label, without the input as part of it.
+            that.originalLabel += this.nodeType === 3 ? $(this).text() : this.outerHTML
+          })
 
-		// If there are multiple labels, use the last one
-		this.label = $( labels[ labels.length - 1 ] );
-		if ( !this.label.length ) {
-			$.error( "No label found for checkboxradio widget" );
-		}
+        // Set the label option if we found label text
+        if (this.originalLabel) {
+          options.label = this.originalLabel
+        }
 
-		this.originalLabel = "";
+        disabled = this.element[0].disabled
+        if (disabled != null) {
+          options.disabled = disabled
+        }
+        return options
+      },
 
-		// We need to get the label text but this may also need to make sure it does not contain the
-		// input itself.
-		this.label.contents().not( this.element[ 0 ] ).each( function() {
+      _create: function() {
+        var checked = this.element[0].checked
 
-			// The label contents could be text, html, or a mix. We concat each element to get a
-			// string representation of the label, without the input as part of it.
-			that.originalLabel += this.nodeType === 3 ? $( this ).text() : this.outerHTML;
-		} );
+        this._bindFormResetHandler()
 
-		// Set the label option if we found label text
-		if ( this.originalLabel ) {
-			options.label = this.originalLabel;
-		}
+        if (this.options.disabled == null) {
+          this.options.disabled = this.element[0].disabled
+        }
 
-		disabled = this.element[ 0 ].disabled;
-		if ( disabled != null ) {
-			options.disabled = disabled;
-		}
-		return options;
-	},
+        this._setOption('disabled', this.options.disabled)
+        this._addClass('ui-checkboxradio', 'ui-helper-hidden-accessible')
+        this._addClass(this.label, 'ui-checkboxradio-label', 'ui-button ui-widget')
 
-	_create: function() {
-		var checked = this.element[ 0 ].checked;
+        if (this.type === 'radio') {
+          this._addClass(this.label, 'ui-checkboxradio-radio-label')
+        }
 
-		this._bindFormResetHandler();
+        if (this.options.label && this.options.label !== this.originalLabel) {
+          this._updateLabel()
+        } else if (this.originalLabel) {
+          this.options.label = this.originalLabel
+        }
 
-		if ( this.options.disabled == null ) {
-			this.options.disabled = this.element[ 0 ].disabled;
-		}
+        this._enhance()
 
-		this._setOption( "disabled", this.options.disabled );
-		this._addClass( "ui-checkboxradio", "ui-helper-hidden-accessible" );
-		this._addClass( this.label, "ui-checkboxradio-label", "ui-button ui-widget" );
+        if (checked) {
+          this._addClass(this.label, 'ui-checkboxradio-checked', 'ui-state-active')
+          if (this.icon) {
+            this._addClass(this.icon, null, 'ui-state-hover')
+          }
+        }
 
-		if ( this.type === "radio" ) {
-			this._addClass( this.label, "ui-checkboxradio-radio-label" );
-		}
+        this._on({
+          change: '_toggleClasses',
+          focus: function() {
+            this._addClass(this.label, null, 'ui-state-focus ui-visual-focus')
+          },
+          blur: function() {
+            this._removeClass(this.label, null, 'ui-state-focus ui-visual-focus')
+          }
+        })
+      },
 
-		if ( this.options.label && this.options.label !== this.originalLabel ) {
-			this._updateLabel();
-		} else if ( this.originalLabel ) {
-			this.options.label = this.originalLabel;
-		}
+      _readType: function() {
+        var nodeName = this.element[0].nodeName.toLowerCase()
+        this.type = this.element[0].type
+        if (nodeName !== 'input' || !/radio|checkbox/.test(this.type)) {
+          $.error(
+            "Can't create checkboxradio on element.nodeName=" +
+              nodeName +
+              ' and element.type=' +
+              this.type
+          )
+        }
+      },
 
-		this._enhance();
+      // Support jQuery Mobile enhanced option
+      _enhance: function() {
+        this._updateIcon(this.element[0].checked)
+      },
 
-		if ( checked ) {
-			this._addClass( this.label, "ui-checkboxradio-checked", "ui-state-active" );
-			if ( this.icon ) {
-				this._addClass( this.icon, null, "ui-state-hover" );
-			}
-		}
+      widget: function() {
+        return this.label
+      },
 
-		this._on( {
-			change: "_toggleClasses",
-			focus: function() {
-				this._addClass( this.label, null, "ui-state-focus ui-visual-focus" );
-			},
-			blur: function() {
-				this._removeClass( this.label, null, "ui-state-focus ui-visual-focus" );
-			}
-		} );
-	},
+      _getRadioGroup: function() {
+        var group
+        var name = this.element[0].name
+        var nameSelector = "input[name='" + $.ui.escapeSelector(name) + "']"
 
-	_readType: function() {
-		var nodeName = this.element[ 0 ].nodeName.toLowerCase();
-		this.type = this.element[ 0 ].type;
-		if ( nodeName !== "input" || !/radio|checkbox/.test( this.type ) ) {
-			$.error( "Can't create checkboxradio on element.nodeName=" + nodeName +
-				" and element.type=" + this.type );
-		}
-	},
+        if (!name) {
+          return $([])
+        }
 
-	// Support jQuery Mobile enhanced option
-	_enhance: function() {
-		this._updateIcon( this.element[ 0 ].checked );
-	},
+        if (this.form.length) {
+          group = $(this.form[0].elements).filter(nameSelector)
+        } else {
+          // Not inside a form, check all inputs that also are not inside a form
+          group = $(nameSelector).filter(function() {
+            return $(this).form().length === 0
+          })
+        }
 
-	widget: function() {
-		return this.label;
-	},
+        return group.not(this.element)
+      },
 
-	_getRadioGroup: function() {
-		var group;
-		var name = this.element[ 0 ].name;
-		var nameSelector = "input[name='" + $.ui.escapeSelector( name ) + "']";
+      _toggleClasses: function() {
+        var checked = this.element[0].checked
+        this._toggleClass(this.label, 'ui-checkboxradio-checked', 'ui-state-active', checked)
 
-		if ( !name ) {
-			return $( [] );
-		}
+        if (this.options.icon && this.type === 'checkbox') {
+          this._toggleClass(
+            this.icon,
+            null,
+            'ui-icon-check ui-state-checked',
+            checked
+          )._toggleClass(this.icon, null, 'ui-icon-blank', !checked)
+        }
 
-		if ( this.form.length ) {
-			group = $( this.form[ 0 ].elements ).filter( nameSelector );
-		} else {
+        if (this.type === 'radio') {
+          this._getRadioGroup().each(function() {
+            var instance = $(this).checkboxradio('instance')
 
-			// Not inside a form, check all inputs that also are not inside a form
-			group = $( nameSelector ).filter( function() {
-				return $( this ).form().length === 0;
-			} );
-		}
+            if (instance) {
+              instance._removeClass(instance.label, 'ui-checkboxradio-checked', 'ui-state-active')
+            }
+          })
+        }
+      },
 
-		return group.not( this.element );
-	},
+      _destroy: function() {
+        this._unbindFormResetHandler()
 
-	_toggleClasses: function() {
-		var checked = this.element[ 0 ].checked;
-		this._toggleClass( this.label, "ui-checkboxradio-checked", "ui-state-active", checked );
+        if (this.icon) {
+          this.icon.remove()
+          this.iconSpace.remove()
+        }
+      },
 
-		if ( this.options.icon && this.type === "checkbox" ) {
-			this._toggleClass( this.icon, null, "ui-icon-check ui-state-checked", checked )
-				._toggleClass( this.icon, null, "ui-icon-blank", !checked );
-		}
+      _setOption: function(key, value) {
+        // We don't allow the value to be set to nothing
+        if (key === 'label' && !value) {
+          return
+        }
 
-		if ( this.type === "radio" ) {
-			this._getRadioGroup()
-				.each( function() {
-					var instance = $( this ).checkboxradio( "instance" );
+        this._super(key, value)
 
-					if ( instance ) {
-						instance._removeClass( instance.label,
-							"ui-checkboxradio-checked", "ui-state-active" );
-					}
-				} );
-		}
-	},
+        if (key === 'disabled') {
+          this._toggleClass(this.label, null, 'ui-state-disabled', value)
+          this.element[0].disabled = value
 
-	_destroy: function() {
-		this._unbindFormResetHandler();
+          // Don't refresh when setting disabled
+          return
+        }
+        this.refresh()
+      },
 
-		if ( this.icon ) {
-			this.icon.remove();
-			this.iconSpace.remove();
-		}
-	},
+      _updateIcon: function(checked) {
+        var toAdd = 'ui-icon ui-icon-background '
 
-	_setOption: function( key, value ) {
+        if (this.options.icon) {
+          if (!this.icon) {
+            this.icon = $('<span>')
+            this.iconSpace = $('<span> </span>')
+            this._addClass(this.iconSpace, 'ui-checkboxradio-icon-space')
+          }
 
-		// We don't allow the value to be set to nothing
-		if ( key === "label" && !value ) {
-			return;
-		}
+          if (this.type === 'checkbox') {
+            toAdd += checked ? 'ui-icon-check ui-state-checked' : 'ui-icon-blank'
+            this._removeClass(this.icon, null, checked ? 'ui-icon-blank' : 'ui-icon-check')
+          } else {
+            toAdd += 'ui-icon-blank'
+          }
+          this._addClass(this.icon, 'ui-checkboxradio-icon', toAdd)
+          if (!checked) {
+            this._removeClass(this.icon, null, 'ui-icon-check ui-state-checked')
+          }
+          this.icon.prependTo(this.label).after(this.iconSpace)
+        } else if (this.icon !== undefined) {
+          this.icon.remove()
+          this.iconSpace.remove()
+          delete this.icon
+        }
+      },
 
-		this._super( key, value );
+      _updateLabel: function() {
+        // Remove the contents of the label ( minus the icon, icon space, and input )
+        var contents = this.label.contents().not(this.element[0])
+        if (this.icon) {
+          contents = contents.not(this.icon[0])
+        }
+        if (this.iconSpace) {
+          contents = contents.not(this.iconSpace[0])
+        }
+        contents.remove()
 
-		if ( key === "disabled" ) {
-			this._toggleClass( this.label, null, "ui-state-disabled", value );
-			this.element[ 0 ].disabled = value;
+        this.label.append(this.options.label)
+      },
 
-			// Don't refresh when setting disabled
-			return;
-		}
-		this.refresh();
-	},
+      refresh: function() {
+        var checked = this.element[0].checked,
+          isDisabled = this.element[0].disabled
 
-	_updateIcon: function( checked ) {
-		var toAdd = "ui-icon ui-icon-background ";
+        this._updateIcon(checked)
+        this._toggleClass(this.label, 'ui-checkboxradio-checked', 'ui-state-active', checked)
+        if (this.options.label !== null) {
+          this._updateLabel()
+        }
 
-		if ( this.options.icon ) {
-			if ( !this.icon ) {
-				this.icon = $( "<span>" );
-				this.iconSpace = $( "<span> </span>" );
-				this._addClass( this.iconSpace, "ui-checkboxradio-icon-space" );
-			}
+        if (isDisabled !== this.options.disabled) {
+          this._setOptions({ disabled: isDisabled })
+        }
+      }
+    }
+  ])
 
-			if ( this.type === "checkbox" ) {
-				toAdd += checked ? "ui-icon-check ui-state-checked" : "ui-icon-blank";
-				this._removeClass( this.icon, null, checked ? "ui-icon-blank" : "ui-icon-check" );
-			} else {
-				toAdd += "ui-icon-blank";
-			}
-			this._addClass( this.icon, "ui-checkboxradio-icon", toAdd );
-			if ( !checked ) {
-				this._removeClass( this.icon, null, "ui-icon-check ui-state-checked" );
-			}
-			this.icon.prependTo( this.label ).after( this.iconSpace );
-		} else if ( this.icon !== undefined ) {
-			this.icon.remove();
-			this.iconSpace.remove();
-			delete this.icon;
-		}
-	},
-
-	_updateLabel: function() {
-
-		// Remove the contents of the label ( minus the icon, icon space, and input )
-		var contents = this.label.contents().not( this.element[ 0 ] );
-		if ( this.icon ) {
-			contents = contents.not( this.icon[ 0 ] );
-		}
-		if ( this.iconSpace ) {
-			contents = contents.not( this.iconSpace[ 0 ] );
-		}
-		contents.remove();
-
-		this.label.append( this.options.label );
-	},
-
-	refresh: function() {
-		var checked = this.element[ 0 ].checked,
-			isDisabled = this.element[ 0 ].disabled;
-
-		this._updateIcon( checked );
-		this._toggleClass( this.label, "ui-checkboxradio-checked", "ui-state-active", checked );
-		if ( this.options.label !== null ) {
-			this._updateLabel();
-		}
-
-		if ( isDisabled !== this.options.disabled ) {
-			this._setOptions( { "disabled": isDisabled } );
-		}
-	}
-
-} ] );
-
-return $.ui.checkboxradio;
-
-} ) );
+  return $.ui.checkboxradio
+})

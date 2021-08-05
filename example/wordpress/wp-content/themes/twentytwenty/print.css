@@ -18,7 +18,6 @@ Andreas Hecht in https://www.jotform.com/blog/css-perfect-print-stylesheet-98272
 # Visibility
 --------------------------------------------------------------*/
 @media print {
-
   /* Margins */
 
   @page {
@@ -35,7 +34,7 @@ Andreas Hecht in https://www.jotform.com/blog/css-perfect-print-stylesheet-98272
   .posts {
     padding: 0;
   }
-  
+
   /* Width */
 
   .entry-content,
@@ -54,7 +53,7 @@ Andreas Hecht in https://www.jotform.com/blog/css-perfect-print-stylesheet-98272
   body {
     background: #fff !important;
     color: #000;
-    font: 13pt Georgia, "Times New Roman", Times, serif;
+    font: 13pt Georgia, 'Times New Roman', Times, serif;
     line-height: 1.3;
   }
 
@@ -111,7 +110,7 @@ Andreas Hecht in https://www.jotform.com/blog/css-perfect-print-stylesheet-98272
   }
 
   /* Links */
-  
+
   a:link,
   a:visited,
   a {
@@ -124,20 +123,20 @@ Andreas Hecht in https://www.jotform.com/blog/css-perfect-print-stylesheet-98272
     page-break-inside: avoid;
   }
 
-  a[href^="http"]:after {
-    content: " < " attr(href) "> ";
+  a[href^='http']:after {
+    content: ' < ' attr(href) '> ';
   }
 
   a:after > img {
-    content: "";
+    content: '';
   }
 
-  article a[href^="#"]:after {
-    content: "";
+  article a[href^='#']:after {
+    content: '';
   }
 
   a:not(:local-link):after {
-    content: " < " attr(href) "> ";
+    content: ' < ' attr(href) '> ';
   }
 
   /* Visibility */

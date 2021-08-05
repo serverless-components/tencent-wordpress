@@ -13,63 +13,56 @@
 //>>docs: http://api.jqueryui.com/slide-effect/
 //>>demos: http://jqueryui.com/effect/
 
-( function( factory ) {
-	if ( typeof define === "function" && define.amd ) {
+;(function(factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define(['jquery', './effect'], factory)
+  } else {
+    // Browser globals
+    factory(jQuery)
+  }
+})(function($) {
+  return $.effects.define('slide', 'show', function(options, done) {
+    var startClip,
+      startRef,
+      element = $(this),
+      map = {
+        up: ['bottom', 'top'],
+        down: ['top', 'bottom'],
+        left: ['right', 'left'],
+        right: ['left', 'right']
+      },
+      mode = options.mode,
+      direction = options.direction || 'left',
+      ref = direction === 'up' || direction === 'down' ? 'top' : 'left',
+      positiveMotion = direction === 'up' || direction === 'left',
+      distance = options.distance || element[ref === 'top' ? 'outerHeight' : 'outerWidth'](true),
+      animation = {}
 
-		// AMD. Register as an anonymous module.
-		define( [
-			"jquery",
-			"./effect"
-		], factory );
-	} else {
+    $.effects.createPlaceholder(element)
 
-		// Browser globals
-		factory( jQuery );
-	}
-}( function( $ ) {
+    startClip = element.cssClip()
+    startRef = element.position()[ref]
 
-return $.effects.define( "slide", "show", function( options, done ) {
-	var startClip, startRef,
-		element = $( this ),
-		map = {
-			up: [ "bottom", "top" ],
-			down: [ "top", "bottom" ],
-			left: [ "right", "left" ],
-			right: [ "left", "right" ]
-		},
-		mode = options.mode,
-		direction = options.direction || "left",
-		ref = ( direction === "up" || direction === "down" ) ? "top" : "left",
-		positiveMotion = ( direction === "up" || direction === "left" ),
-		distance = options.distance ||
-			element[ ref === "top" ? "outerHeight" : "outerWidth" ]( true ),
-		animation = {};
+    // Define hide animation
+    animation[ref] = (positiveMotion ? -1 : 1) * distance + startRef
+    animation.clip = element.cssClip()
+    animation.clip[map[direction][1]] = animation.clip[map[direction][0]]
 
-	$.effects.createPlaceholder( element );
+    // Reverse the animation if we're showing
+    if (mode === 'show') {
+      element.cssClip(animation.clip)
+      element.css(ref, animation[ref])
+      animation.clip = startClip
+      animation[ref] = startRef
+    }
 
-	startClip = element.cssClip();
-	startRef = element.position()[ ref ];
-
-	// Define hide animation
-	animation[ ref ] = ( positiveMotion ? -1 : 1 ) * distance + startRef;
-	animation.clip = element.cssClip();
-	animation.clip[ map[ direction ][ 1 ] ] = animation.clip[ map[ direction ][ 0 ] ];
-
-	// Reverse the animation if we're showing
-	if ( mode === "show" ) {
-		element.cssClip( animation.clip );
-		element.css( ref, animation[ ref ] );
-		animation.clip = startClip;
-		animation[ ref ] = startRef;
-	}
-
-	// Actually animate
-	element.animate( animation, {
-		queue: false,
-		duration: options.duration,
-		easing: options.easing,
-		complete: done
-	} );
-} );
-
-} ) );
+    // Actually animate
+    element.animate(animation, {
+      queue: false,
+      duration: options.duration,
+      easing: options.easing,
+      complete: done
+    })
+  })
+})
