@@ -70,8 +70,7 @@ const CONFIGS = {
     runtime: 'Nodejs12.16',
     handler: 'sl_handler.handler',
     cfsMountDir: '/mnt',
-    timeout: 120,
-    initTimeout: 3
+    timeout: 120
   },
 
   // wp-server 函数配置
