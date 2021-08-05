@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/serverless-components/tencent-wordpress/compare/v0.2.1...v0.2.2) (2021-08-05)
+
+
+### Bug Fixes
+
+* remove initTimeout ([#8](https://github.com/serverless-components/tencent-wordpress/issues/8)) ([590c44a](https://github.com/serverless-components/tencent-wordpress/commit/590c44a124ff8e0093a58c6c8fd0449c7e3ea896))
+
 ## [0.2.1](https://github.com/serverless-components/tencent-wordpress/compare/v0.2.0...v0.2.1) (2021-04-28)
 
 
