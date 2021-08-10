@@ -52,6 +52,7 @@ $extension_map = array(
     "swf" => "video/mpeg4",
     "tif" => "image/tiff",
     "tiff" => "image/tiff",
+    "ttf" => "application/x-font-ttf",
     "vcf" => "text/x-vcard",
     "wav" => "audio/wav",
     "wma" => "audio/x-ms-wma",
@@ -68,7 +69,6 @@ $extension_map = array(
     "rmvb" => "application/vnd.rn-realmedia-vbr",
     "torrent" => "application/x-bittorrent",
 );
-
 
 $request_uri = explode("?", $_SERVER['REQUEST_URI']);
 $local_file_path = $_SERVER['DOCUMENT_ROOT'] . urldecode($request_uri[0]);
@@ -100,15 +100,27 @@ if ( $mapped_type && file_exists( $local_file_path ) ) {
     }
     fclose($fp);
 } elseif ( $extension == "php" && file_exists( $local_file_path ) ) {
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
+
     header("X-ExecFile: {$local_file_path}");
     require( $local_file_path );
 
 } elseif ( substr($local_file_path, -1) == "/" && file_exists( $local_file_path . "index.php" ) ) {
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
+
     $exec_file_path = $local_file_path . "index.php";
     header("X-ExecFile: {$exec_file_path}");
     require( $exec_file_path );
 
 } else {
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
+
     $exec_file_path = dirname(__FILE__) . '/index.php';
     header("X-ExecFile: {$exec_file_path}");
     require( $exec_file_path );
