@@ -2,7 +2,7 @@ name: wordpress
 version: 0.2.4
 author: Tencent Cloud, Inc.
 org: Tencent Cloud, Inc.
-description: Deploy a serverless wordpress.js application on Tencent SCF and API Gateway.
+description: WordPress 组件，允许用户创建部署一个 WordPress 实例。
 keywords: tencent, serverless, wordpress
 repo: https://github.com/serverless-components/tencent-wordpress
 readme: https://github.com/serverless-components/tencent-wordpress/tree/master/README.md
