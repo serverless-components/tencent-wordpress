@@ -1,5 +1,5 @@
 name: wordpress
-version: 0.2.4
+version: 0.2.6
 author: Tencent Cloud, Inc.
 org: Tencent Cloud, Inc.
 description: WordPress 组件，允许用户创建部署一个 WordPress 实例。
