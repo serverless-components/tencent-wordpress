@@ -79,6 +79,7 @@ const getCodeZipPath = async ({ instance, inputs }) => {
 
     console.log(`Downloading default ${framework} application`)
     try {
+      // template中包含除handler.php和scf_bootstrap外的所有代码
       await download(CONFIGS.templateUrl, downloadPath, {
         filename: `${filename}.zip`
       })

@@ -5,8 +5,8 @@ function join(p) {
 }
 
 const CONFIGS = {
-  region: 'ap-shanghai',
-  zone: 'ap-shanghai-2',
+  region: 'ap-guangzhou',
+  zone: 'ap-guangzhou-4',
 
   description: 'Created by Serverless Component',
 
@@ -70,6 +70,7 @@ const CONFIGS = {
     runtime: 'Nodejs12.16',
     handler: 'sl_handler.handler',
     cfsMountDir: '/mnt',
+    memorySize: 512,
     timeout: 120
   },
 
@@ -80,7 +81,7 @@ const CONFIGS = {
     type: 'web',
     runtime: 'Php7',
     cfsMountDir: '/mnt',
-    wpCodeDir: '/mnt/wordpress',
+    wpCodeDir: '/mnt/wp-content',
     memorySize: 1024,
     timeout: 900
   },

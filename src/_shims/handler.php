@@ -23,14 +23,6 @@ function active_mysql_connect()
     return $connect_db_retry_num;
 }
 
-// 尝试去激活serverless db
-$db_mode = "";
-$db_mode = getenv("DB_MODE");
-if ($db_mode == "SERVERLESS") {
-  active_mysql_connect();
-}
-
-
 $extension_map = array(
     "css" => "text/css",
     "js" => "application/javascript",
@@ -52,6 +44,8 @@ $extension_map = array(
     "swf" => "video/mpeg4",
     "tif" => "image/tiff",
     "tiff" => "image/tiff",
+    "ttf" => "application/x-font-ttf",
+    "woff" => "application/x-font-woff",
     "vcf" => "text/x-vcard",
     "wav" => "audio/wav",
     "wma" => "audio/x-ms-wma",
@@ -69,9 +63,9 @@ $extension_map = array(
     "torrent" => "application/x-bittorrent",
 );
 
-
 $request_uri = explode("?", $_SERVER['REQUEST_URI']);
 $local_file_path = $_SERVER['DOCUMENT_ROOT'] . urldecode($request_uri[0]);
+$remote_file_path = "/mnt/" . urldecode($request_uri[0]);
 
 
 if ( $local_file_path == __FILE__ ) {
@@ -81,11 +75,30 @@ if ( $local_file_path == __FILE__ ) {
 }
 
 
+$db_mode = "";
+$db_mode = getenv("DB_MODE");
+$cdb_st = microtime(true);
 $split = explode(".", $local_file_path);
 $extension = end($split);
 $mapped_type = $extension_map[$extension];
 
-if ( $mapped_type && file_exists( $local_file_path ) ) {
+if ( $mapped_type && file_exists( $remote_file_path ) ) {
+
+    header("Content-Type: {$mapped_type}");
+    $file_size=filesize($remote_file_path);
+    header("Accept-Length:$file_size");
+    $fp=fopen($remote_file_path,"r");
+    $buffer=1024;
+    $file_count=0;
+    while(!feof($fp)&&($file_size-$file_count>0)){
+        $file_data=fread($fp,$buffer);
+        //统计读了多少个字节
+        $file_count+=$buffer;
+        echo $file_data;
+    }
+    fclose($fp);
+} elseif ( $mapped_type && file_exists( $local_file_path ) ) {
+
     header("Content-Type: {$mapped_type}");
     $file_size=filesize($local_file_path);
     header("Accept-Length:$file_size");
@@ -99,18 +112,60 @@ if ( $mapped_type && file_exists( $local_file_path ) ) {
         echo $file_data;
     }
     fclose($fp);
+
 } elseif ( $extension == "php" && file_exists( $local_file_path ) ) {
+
+    // 尝试去激活serverless db
+    if ($db_mode == "SERVERLESS") {
+        active_mysql_connect();
+    }
+    $cdb_et = microtime(true);
+    $cdb_time = ($cdb_et - $cdb_st) * 1000 . 'ms';
+    header("X-cdb-time:{$cdb_time}");
+
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
     header("X-ExecFile: {$local_file_path}");
+
     require( $local_file_path );
 
 } elseif ( substr($local_file_path, -1) == "/" && file_exists( $local_file_path . "index.php" ) ) {
+
+    // 尝试去激活serverless db
+    if ($db_mode == "SERVERLESS") {
+        active_mysql_connect();
+    }
+    $cdb_et = microtime(true);
+    $cdb_time = ($cdb_et - $cdb_st) * 1000 . 'ms';
+    header("X-cdb-time:{$cdb_time}");
+
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
+
     $exec_file_path = $local_file_path . "index.php";
     header("X-ExecFile: {$exec_file_path}");
     require( $exec_file_path );
 
 } else {
+
+
+    // 尝试去激活serverless db
+    if ($db_mode == "SERVERLESS") {
+        active_mysql_connect();
+    }
+    $cdb_et = microtime(true);
+    $cdb_time = ($cdb_et - $cdb_st) * 1000 . 'ms';
+    header("X-cdb-time:{$cdb_time}");
+
+    header('Cache-Control:no-cache,must-revalidate');
+    header('Pragma:no-cache');
+    header("Expires:0");
+
     $exec_file_path = dirname(__FILE__) . '/index.php';
     header("X-ExecFile: {$exec_file_path}");
+
     require( $exec_file_path );
 }
 

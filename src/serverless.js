@@ -5,6 +5,7 @@ const { deepClone, generateId, getCodeZipPath, uploadCodeToCos } = require('./ut
 const {
   invokeFaas,
   deployFaas,
+  deployServerFaas,
   removeFaas,
   deployApigw,
   removeApigw,
@@ -83,7 +84,7 @@ class ServerlessComponent extends Component {
       }
     }
 
-    // 1. 部署VPC
+    // 1. 部署VPC.
     let deployVpcHandler = deployByDefaultVpc
     if (inputs.vpc) {
       inputs.vpc.vpcName = `${CONFIGS.vpc.vpcName}`
@@ -334,7 +335,7 @@ class ServerlessComponent extends Component {
     } else {
       serverFaasInputs = defaultServerFaasConfig
     }
-    const wpServerOutput = await deployFaas({
+    const wpServerOutput = await deployServerFaas({
       instance: this,
       inputs: {
         ...inputs,
@@ -360,9 +361,9 @@ class ServerlessComponent extends Component {
       },
       state: this.state.wpServerFaas,
       code: {
-        zipPath: CONFIGS.wpServerFaas.zipPath,
-        bucket: CONFIGS.bucket,
-        object: `${CONFIGS.wpServerFaas.name}-${uuid}.zip`
+        zipPath: '',
+        bucket: wpCodes.bucket,
+        object: wpCodes.object
       }
     })
 
