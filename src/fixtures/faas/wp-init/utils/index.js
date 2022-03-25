@@ -1,6 +1,11 @@
 const AdmZip = require('adm-zip')
 const path = require('path')
 const fs = require('fs')
+const child_process = require('child_process')
+
+function copyDir(src, dist) {
+  child_process.spawn('cp', ['-r', src, dist])
+}
 
 function resolve(filename) {
   return path.resolve(process.cwd(), filename)
@@ -41,5 +46,6 @@ async function sleep(ms) {
 
 module.exports = {
   sleep,
-  unzip
+  unzip,
+  copyDir
 }

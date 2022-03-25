@@ -13,6 +13,98 @@ const {
 
 const { getAvailableCidr } = require('./vpc')
 
+async function deployServerFaas({ instance, inputs, code, state = {} }) {
+  const { __TmpCredentials, CONFIGS } = instance
+  const region = inputs.region || CONFIGS.region
+
+  const scf = new Scf(__TmpCredentials, region)
+  const inputFaas = inputs.faas || {}
+  const tags = inputs.tags || []
+  const DEFAULT_CONFIGS = deepClone(CONFIGS.faas)
+  const appId = instance.getAppId()
+
+  const sdkInput = {
+    region: region,
+    name: inputFaas.name || state.name || getDefaultFunctionName('wp'),
+    code: {
+      // TODO: 此处为了兼容后端服务，删除掉 -<appid> 后缀，实际 COS 桶名称应该是携带该后缀的
+      bucket: removeAppid(code.bucket, appId),
+      object: code.object
+    },
+
+    // 依赖 layer
+    layers: inputs.layers || [],
+
+    // 依赖 CFS
+    cfs: inputs.cfs || [],
+
+    // 依赖 vpc
+    vpcConfig: inputs.vpc,
+
+    // 函数特定配置
+    type: inputFaas.type,
+    runtime: inputFaas.runtime || DEFAULT_CONFIGS.runtime,
+    handler: inputFaas.handler || DEFAULT_CONFIGS.handler,
+
+    // 支持用户配置
+    role: inputFaas.role || '',
+    description: inputFaas.description || CONFIGS.description,
+    namespace: inputFaas.namespace || DEFAULT_CONFIGS.namespace,
+    timeout: inputFaas.timeout || DEFAULT_CONFIGS.timeout,
+    initTimeout: inputFaas.initTimeout || DEFAULT_CONFIGS.initTimeout,
+    memorySize: inputFaas.memorySize || DEFAULT_CONFIGS.memorySize,
+    environment: {
+      variables: {
+        SERVERLESS: '1'
+      }
+    }
+  }
+
+  // 配置环境变量
+  if (inputFaas.environments) {
+    inputFaas.environments.forEach((item) => {
+      sdkInput.environment.variables[item.key] = item.value
+    })
+  }
+
+  const scfTags = {}
+  tags.forEach((item) => {
+    scfTags[item.key] = item.value
+  })
+  sdkInput.tags = scfTags
+
+  // 配置标签
+  if (inputFaas.tags) {
+    sdkInput.tags = {}
+    deepClone(inputFaas.tags).forEach((item) => {
+      sdkInput.tags[item.key] = item.value
+    })
+  }
+
+  function formatOutputs(outputs) {
+    const result = {
+      name: outputs.FunctionName,
+      runtime: outputs.Runtime,
+      namespace: outputs.Namespace,
+      memorySize: outputs.MemorySize
+    }
+
+    if (outputs.Layers && outputs.Layers.length > 0) {
+      result.layers = outputs.Layers.map((item) => ({
+        name: item.LayerName,
+        version: item.LayerVersion
+      }))
+    }
+
+    return result
+  }
+
+  console.log(`Create WP function ${sdkInput.handler} , ${sdkInput.type}`)
+  const outputs = await scf.deploy(deepClone(sdkInput))
+
+  return formatOutputs(outputs)
+}
+
 async function deployFaas({ instance, inputs, code, state = {} }) {
   const { __TmpCredentials, CONFIGS } = instance
   const region = inputs.region || CONFIGS.region
@@ -21,7 +113,6 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
   const inputFaas = inputs.faas || {}
   const tags = inputs.tags || []
   const DEFAULT_CONFIGS = deepClone(CONFIGS.faas)
-
   const { bucket, object } = await uploadCodeToCos({ instance, region, code })
   const appId = instance.getAppId()
 
@@ -31,7 +122,7 @@ async function deployFaas({ instance, inputs, code, state = {} }) {
     code: {
       // TODO: 此处为了兼容后端服务，删除掉 -<appid> 后缀，实际 COS 桶名称应该是携带该后缀的
       bucket: removeAppid(bucket, appId),
-      object
+      object: object
     },
 
     // 依赖 layer
@@ -774,6 +865,7 @@ async function removeCdn({ instance, region, state = {} }) {
 module.exports = {
   invokeFaas,
   deployFaas,
+  deployServerFaas,
   removeFaas,
   deployApigw,
   removeApigw,

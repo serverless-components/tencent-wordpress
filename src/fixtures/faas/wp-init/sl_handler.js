@@ -1,15 +1,19 @@
 const fs = require('fs')
 const COS = require('cos-nodejs-sdk-v5')
 const mysql = require('mysql2/promise')
-const { sleep, unzip } = require('./utils')
+const { sleep, unzip, copyDir } = require('./utils')
 
 async function handler(event, context) {
   context.callbackWaitsForEmptyEventLoop = false
-
-  const bakPath = '/mnt/wordpress_bak'
-  const unzipPath = '/mnt/wordpress'
-  const downloadZipPath = '/mnt/wordpress_bak/wd.zip'
-
+  const generateId = () =>
+    Math.random()
+      .toString(36)
+      .substring(6)
+  const randomId = generateId()
+  const contentPath = '/mnt/wp-content'
+  const unzipPath = `/tmp/${randomId}/unzip`
+  const contentCopyPath = `/tmp/${randomId}/unzip/wp-content`
+  const downloadZipPath = `/tmp/${randomId}/wp.zip`
   const response = {
     status: 'failed',
     reason: '',
@@ -59,7 +63,7 @@ async function handler(event, context) {
   // 同步代码
   // 创建 文件夹
   try {
-    fs.mkdirSync(bakPath, { recursive: true })
+    fs.mkdirSync(unzipPath, { recursive: true })
   } catch (e) {}
 
   // 下载 wordpress 源码 zip 到指定目录
@@ -93,8 +97,8 @@ async function handler(event, context) {
 
   try {
     await downloadWpCode()
-    fs.rmdirSync(unzipPath, { recursive: true })
     await unzip(downloadZipPath, unzipPath)
+    await copyDir(contentCopyPath, contentPath)
     response.status = 'success'
 
     console.log(`Sync wordpress code success`)
